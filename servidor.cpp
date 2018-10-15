@@ -1,18 +1,4 @@
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
 #include <stdlib.h>
-#include <string.h>
-#include <signal.h>
-#include <unistd.h>
-#include <time.h>
-#include <arpa/inet.h>
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include "usuario.hpp"
 #include "funciones.hpp"
 
 #define MSG_SIZE 250
@@ -177,6 +163,9 @@ int main(){
 									else{ //El usuario esta en estado CONECTADO
 										if(division.size()==2){ //Se cumple el formato de USUARIO
 											if(funcionUsuario(division[1],i)){ //Se ha validado el nombre de usuario
+												buscarUsuario(i,usuarios).setUsuario(division[1]); //Se almacena el nombre de usuario
+												buscarUsuario(i,usuarios).setEstado(NOMBRE); //Se cambia el estado del usuario a NOMBRE
+												
 												bzero(buffer,sizeof(buffer));
 												sprintf(buffer,"+Ok. Usuario correcto\n");
 												send(i,buffer,sizeof(buffer),0);
@@ -186,6 +175,33 @@ int main(){
 										else{ //No se cumple el formato de USUARIO
 											bzero(buffer,sizeof(buffer));
                                             						sprintf(buffer,"-Err. Formato incorrecto, no ha introducido un usuario\n");
+                                            						send(i,buffer,sizeof(buffer),0);
+										}
+									}
+								}
+								
+								else if(division[0]=="PASSWORD"){ //Se ha recibido PASSWORD
+									if(buscarUsuario(i,usuarios).getEstado()!=NOMBRE){ //El usuario no ha introducido su nombre anteriormente
+										bzero(buffer,sizeof(buffer));
+										sprintf(buffer,"-Err. Aun no ha introducido ningun nombre de usuario\n");
+										send(i,buffer,sizeof(buffer),0);
+									}
+									
+									else{ //El usuario ha introducido su nombre anteriormente
+										if(division.size()==2){ //Se cumple el formato de PASSWORD
+											if(funcionPassword(buscarUsuario(i,usuarios).getUsuario(),division[1],i)){ //Se ha validado al usuario
+												buscarUsuario(i,usuarios).setPassword(division[1]); //Se almacena la password del usuario
+												buscarUsuario(i,usuarios).setEstado(LOGUEADO); //Se cambia el estado del usuario a LOGUEADO
+												
+												bzero(buffer,sizeof(buffer));
+												sprintf(buffer,"+Ok. Usuario validado\n");
+												send(i,buffer,sizeof(buffer),0);
+											}
+										}
+										
+										else{ //No se ha validado al usuario
+											bzero(buffer,sizeof(buffer));
+                                            						sprintf(buffer,"-Err. Formato incorrecto, no ha introducido una password\n");
                                             						send(i,buffer,sizeof(buffer),0);
 										}
 									}

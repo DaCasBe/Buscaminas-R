@@ -152,3 +152,35 @@ Usuario buscarUsuario(int sd,std::vector <Usuario> usuarios){
 		}
 	}
 }
+
+bool funcionPassword(std::string usuario,std::string password,int descriptor){
+	std::ifstream leer;
+	char buffer[MSG_SIZE];
+	char useraux[80],passwordaux[80];
+	
+	leer.open("usuarios.txt"); //Se abre el fichero de usuarios
+	
+	if(!leer){ //No se ha podido abrir el fichero de usuarios
+		bzero(buffer,sizeof(buffer));
+		sprintf(buffer,"-Err. No se pudo establecer conexion con la base de datos\n");
+		send(descriptor,buffer,sizeof(buffer),0);
+		
+		return false;
+	}
+	
+	else{ //Se ha podido abrir el fichero de usuarios
+		while(leer >> useraux >> passwordaux){ //Se leen los nombres de usuario y las passwords del fichero de usuarios
+			if(strcmp(useraux,usuario.c_str())==0 and strcmp(passwordaux,password.c_str())==0){ //Se ha encontrado al usuario y su password es correcta
+				return true;
+			}
+		}
+		
+		bzero(buffer,sizeof(buffer));
+		sprintf(buffer,"-Err. Password incorrecta\n");
+		send(descriptor,buffer,sizeof(buffer),0);
+		
+		leer.close(); //Se cierra el fichero de usuarios
+	}
+	
+	return false;
+}
