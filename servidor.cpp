@@ -12,6 +12,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include "usuario.hpp"
 
 
 #define MSG_SIZE 250
@@ -25,6 +26,8 @@
 void manejador(int signum);
 void salirCliente(int socket, fd_set * readfds, int * numClientes, int arrayClientes[]);
 std::vector <std::string> dividirCadena(std::string cadena,std::string separador);
+bool registro(std::string user, std::string password, int descriptor);
+bool funcionUsuario(std::string usuario, int descriptor);
 
 int main ( )
 {
@@ -294,4 +297,103 @@ std::vector <std::string> dividirCadena(std::string cadena,std::string separador
     dividido.push_back(cadena.substr(0, cadena.size()));
     
     return dividido;
+}
+
+bool registro(std::string user, std::string password, int descriptor){
+
+    char bufferaux [MSG_SIZE];
+    char useraux1[80], useraux2[80];
+    char passwordaux1[80], passwordaux2[80];
+
+    strcpy(useraux1,user.c_str());
+    strcpy(passwordaux1,password.c_str());
+
+    if(user.c_str()==NULL && password.c_str()==NULL){
+        bzero(bufferaux,sizeof(bufferaux));
+        sprintf(bufferaux,"-Err. No se introdujo el nombre de usuario o la password\n");
+        send(descriptor,bufferaux,sizeof(bufferaux),0);
+        
+        return false;
+    }
+
+    std::ifstream leer;
+    std::ofstream escribir;
+
+    leer.open("usuarios.txt");
+
+    if(!leer){ //No se ha podido abrir el fichero de usuarios
+        //Se crea el fichero de usuarios
+        escribir.open("usuarios.txt", std::ios::out);
+        escribir.close();   
+    }
+    else{
+        while(leer >> useraux2 >> passwordaux2){
+
+            if(strcpy(useraux1,useraux2)==0){
+                bzero(bufferaux,sizeof(bufferaux));
+                sprintf(bufferaux,"-Err. El usuario ya esta registrado\n");
+                send(descriptor,bufferaux,sizeof(bufferaux),0);
+                return false;
+            }
+        }
+
+        leer.close();
+    }
+
+    escribir.open("usuarios.txt", std::ios::app);
+
+    if(!escribir)
+    {
+        bzero(bufferaux,sizeof(bufferaux));
+        sprintf(bufferaux,"-Err. No se pudo establecer conexion con la base de datos\n");
+        send(descriptor,bufferaux,sizeof(bufferaux),0);
+        return false;
+    }
+    else
+    {
+        escribir << useraux1 << " " <<passwordaux1;
+    }
+
+    escribir.close();
+
+    bzero(bufferaux,sizeof(bufferaux));
+    sprintf(bufferaux,"+Ok. Ha sido registrado correctamente\n");
+    send(descriptor,bufferaux,sizeof(bufferaux),0);
+
+    return true;
+}
+
+bool funcionUsuario(std::string usuario, int descriptor){
+
+	std::ifstream leer;
+	leer.open("usuarios.txt");
+
+	char bufferaux [MSG_SIZE];
+	char useraux[80], passwordaux[80];
+
+	if(!leer){ //No se ha podido abrir el fichero de usuarios
+		std::cout << "Fallo al abrir la base de datos" << std::endl;   
+    }
+    else{
+        while(leer >> useraux >> passwordaux){
+
+            if(strcmp(useraux,usuario.c_str())==0){ // si hay un usuario registrado con ese nombre devolvemos true
+                bzero(bufferaux,sizeof(bufferaux));
+                sprintf(bufferaux,"+Ok, Usuario correcto\n");
+                send(descriptor,bufferaux,sizeof(bufferaux),0);
+                return true;
+            }
+        }
+
+        leer.close();
+    }
+
+    // el usuario no existe, enviamos un mensaje de error
+
+    bzero(bufferaux,sizeof(bufferaux));
+    sprintf(bufferaux,"-Err. Usuario incorrecto\n");
+    send(descriptor,bufferaux,sizeof(bufferaux),0);
+
+    return false;
+
 }
