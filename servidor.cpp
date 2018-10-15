@@ -24,10 +24,11 @@
  */
 
 void manejador(int signum);
-void salirCliente(int socket, fd_set * readfds, int * numClientes, int arrayClientes[]);
+void salirCliente(int socket, fd_set * readfds,std::vector <Usuario> &usuarios);
 std::vector <std::string> dividirCadena(std::string cadena,std::string separador);
 bool registro(std::string user, std::string password, int descriptor);
 bool funcionUsuario(std::string usuario, int descriptor);
+Usuario buscarUsuario(int sd,std::vector <Usuario> usuarios);
 
 int main ( )
 {
@@ -41,14 +42,13 @@ int main ( )
 	socklen_t from_len;
     fd_set readfds, auxfds;
     int salida;
-    int arrayClientes[MAX_CLIENTS];
-    int numClientes = 0;
     //contadores
     int i,j,k;
 	int recibidos;
     char identificador[MSG_SIZE];
     
     int on, ret;
+    std::vector <Usuario> usuarios;
 
     
     
@@ -133,11 +133,11 @@ int main ( )
                             }
                             else
                             {
-                                if(numClientes < MAX_CLIENTS){//aqui aceptamos los clientes
-
-
-                                    arrayClientes[numClientes] = new_sd;
-                                    numClientes++;
+                                if((int)usuarios.size() < MAX_CLIENTS){//aqui aceptamos los clientes
+				    Usuario usuario;
+				    usuario.setDescriptor(new_sd);
+				    usuarios.push_back(usuario);
+				    
                                     FD_SET(new_sd,&readfds);
                                 
                                     strcpy(buffer, "+Ok. Usuario conectado\n");
@@ -166,13 +166,15 @@ int main ( )
                             //Controlar si se ha introducido "SALIR", cerrando todos los sockets y finalmente saliendo del servidor. (implementar)
                             if(strcmp(buffer,"SALIR\n") == 0){
                              
-                                for (j = 0; j < numClientes; j++){
-                                    send(arrayClientes[j], "Desconexion servidor\n", strlen("Desconexion servidor\n"),0);
-                                    close(arrayClientes[j]);
-                                    FD_CLR(arrayClientes[j],&readfds);
+                                for (j = 0; j < usuarios.size(); j++){
+                                    send(usuarios[j].getDescriptor(), "Desconexion servidor\n", strlen("Desconexion servidor\n"),0);
+                                    close(usuarios[j].getDescriptor());
+                                    FD_CLR(usuarios[j].getDescriptor(),&readfds);
                                 }
-                                    numClientes--;
+                                
+                                    usuarios.clear();
                                     close(sd);
+                                    
                                     exit(-1);
                                 
                                 
@@ -189,16 +191,20 @@ int main ( )
                                 
                                 if(strcmp(buffer,"SALIR\n") == 0){
                                     
-                                    salirCliente(i,&readfds,&numClientes,arrayClientes);
+                                    salirCliente(i,&readfds,usuarios);
                                     
                                 }
                                 else{
 
 
                                     std::vector <std::string> division=dividirCadena(std::string(buffer), " ");
-                                    if(division[0]=="REGISTRO" || division[0]=="REGISTRO\n" ){
+                                    if(division[0]=="REGISTRO"){
                                         if(division.size() == 5 && division[1]=="-u" && division[3]=="-p"){
-                                            registro(division[2],division[4],i);
+                                            if(registro(division[2],division[4],i)){
+                                            	bzero(buffer,sizeof(buffer));
+    						sprintf(buffer,"+Ok. Ha sido registrado correctamente\n");
+    						send(i,buffer,sizeof(buffer),0);
+                                            }
                                         }
                                         else{
                                             bzero(buffer,sizeof(buffer));
@@ -207,26 +213,44 @@ int main ( )
                                         }
                                     }
 
-                                    if(division[0]=="USUARIO"){
-                                    	if(division.size()==2){ // si ha introducido el usuario buscamos que esta registrado
-                                    		/*if(Funcion_Usuario==true){
-
-                                    		}*/
+                                    else if(division[0]=="USUARIO"){
+                                    	if(buscarUsuario(i,usuarios).getEstado()!=CONECTADO){
+                                    		bzero(buffer,sizeof(buffer));
+                                            	sprintf(buffer,"-Err. No esta conectado\n");
+                                            	send(i,buffer,sizeof(buffer),0);
                                     	}
-                                    	else{ // el usuario no ha introducido un usuario
-											bzero(buffer,sizeof(buffer));
-                                            sprintf(buffer,"-Err. Formato incorrecto, no ha introducido un usuario\n");
-                                            send(i,buffer,sizeof(buffer),0);
+                                    	
+                                    	else{
+                                    		if(division.size()==2){ // si ha introducido el usuario buscamos que esta registrado
+                                    			if(funcionUsuario(division[1],i)){
+								bzero(buffer,sizeof(buffer));
+								sprintf(buffer,"+Ok. Usuario correcto\n");
+								send(i,buffer,sizeof(buffer),0);
+                                    			}
+                                    		}
+                                    		else{ // el usuario no ha introducido un usuario
+							bzero(buffer,sizeof(buffer));
+                                            		sprintf(buffer,"-Err. Formato incorrecto, no ha introducido un usuario\n");
+                                            		send(i,buffer,sizeof(buffer),0);
+                                    		}
                                     	}
+                                    	
+                                    	
+                                    }
+                                    
+                                    else{
+                                    	bzero(buffer,sizeof(buffer));
+                                        sprintf(buffer,"-Err. No ha usado ninguna opcion disponible\n");
+                                        send(i,buffer,sizeof(buffer),0);
                                     }
                                     
                                     sprintf(identificador,"%d: %s",i,buffer);
                                     bzero(buffer,sizeof(buffer));
                                     strcpy(buffer,identificador);
                                                                                                                                                                                                                                                         
-                                    for(j=0; j<numClientes; j++)
-                                        if(arrayClientes[j] != i)
-                                            send(arrayClientes[j],buffer,strlen(buffer),0);
+                                    for(j=0; j<usuarios.size(); j++)
+                                        if(usuarios[j].getDescriptor() != i)
+                                            send(usuarios[j].getDescriptor(),buffer,strlen(buffer),0);
 
                                     
                                 }
@@ -238,7 +262,7 @@ int main ( )
                             {
                                 printf("El socket %d, ha introducido ctrl+c\n", i);
                                 //Eliminar ese socket
-                                salirCliente(i,&readfds,&numClientes,arrayClientes);
+                                salirCliente(i,&readfds,usuarios);
                             }
                         }
                     }
@@ -251,7 +275,7 @@ int main ( )
 	
 }
 
-void salirCliente(int socket, fd_set * readfds, int * numClientes, int arrayClientes[]){
+void salirCliente(int socket, fd_set * readfds,std::vector <Usuario> &usuarios){
   
     char buffer[250];
     int j;
@@ -260,22 +284,20 @@ void salirCliente(int socket, fd_set * readfds, int * numClientes, int arrayClie
     FD_CLR(socket,readfds);
     
     //Re-estructurar el array de clientes
-    for (j = 0; j < (*numClientes) - 1; j++)
-        if (arrayClientes[j] == socket)
+    for (j = 0; j < usuarios.size() - 1; j++)
+        if (usuarios[j].getDescriptor() == socket)
             break;
-    for (; j < (*numClientes) - 1; j++)
-        (arrayClientes[j] = arrayClientes[j+1]);
-    
-    (*numClientes)--;
+    for (; j < usuarios.size() - 1; j++)
+        (usuarios[j].setDescriptor(usuarios[j+1].getDescriptor()));
     
     bzero(buffer,sizeof(buffer));
     sprintf(buffer,"Desconexión del cliente: %d\n",socket);
     
-    for(j=0; j<(*numClientes); j++)
-        if(arrayClientes[j] != socket)
-            send(arrayClientes[j],buffer,strlen(buffer),0);
+    for(j=0; j<usuarios.size(); j++)
+        if(usuarios[j].getDescriptor() != socket)
+            send(usuarios[j].getDescriptor(),buffer,strlen(buffer),0);
 
-
+    usuarios.erase(usuarios.begin()+j);
 }
 
 
@@ -356,10 +378,6 @@ bool registro(std::string user, std::string password, int descriptor){
 
     escribir.close();
 
-    bzero(bufferaux,sizeof(bufferaux));
-    sprintf(bufferaux,"+Ok. Ha sido registrado correctamente\n");
-    send(descriptor,bufferaux,sizeof(bufferaux),0);
-
     return true;
 }
 
@@ -378,9 +396,6 @@ bool funcionUsuario(std::string usuario, int descriptor){
         while(leer >> useraux >> passwordaux){
 
             if(strcmp(useraux,usuario.c_str())==0){ // si hay un usuario registrado con ese nombre devolvemos true
-                bzero(bufferaux,sizeof(bufferaux));
-                sprintf(bufferaux,"+Ok, Usuario correcto\n");
-                send(descriptor,bufferaux,sizeof(bufferaux),0);
                 return true;
             }
         }
@@ -396,4 +411,12 @@ bool funcionUsuario(std::string usuario, int descriptor){
 
     return false;
 
+}
+
+Usuario buscarUsuario(int sd,std::vector <Usuario> usuarios){
+	for(int i=0;i<usuarios.size();i++){
+		if(usuarios[i].getDescriptor()==sd){
+			return usuarios[i];
+		}
+	}
 }

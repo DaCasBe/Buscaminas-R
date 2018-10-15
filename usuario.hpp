@@ -15,11 +15,8 @@ class Usuario{
 		int _descriptor;
 		
 	public:
-		inline Usuario(int descriptor,std::string usuario=NULL,std::string password=NULL,int estado=0){
-			setDescriptor(descriptor);
-			setUsuario(usuario);
-			setPassword(password);
-			setEstado(estado);
+		inline Usuario(){
+			setEstado(CONECTADO);
 		}
 		
 		inline void setDescriptor(int descriptor){
