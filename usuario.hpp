@@ -9,14 +9,14 @@
 
 class Usuario{
 	private:
-		std::string _usuario;
-		std::string _password;
-		int _estado;
-		int _descriptor;
+		int _descriptor; //Descriptor asociado al usuario
+		std::string _usuario; //Nombre de usuario
+		std::string _password; //Password del usuario
+		int _estado; //Estado del usuario
 		
 	public:
 		inline Usuario(){
-			setEstado(CONECTADO);
+			setEstado(CONECTADO); //Se establece el estado del usuario como CONECTADO
 		}
 		
 		inline void setDescriptor(int descriptor){
