@@ -16,7 +16,7 @@ void salirCliente(int socket,fd_set * readfds,std::vector <Usuario> &usuarios);
 std::vector <std::string> dividirCadena(std::string cadena,std::string separador);
 bool registro(std::string user,std::string password,int descriptor);
 bool funcionUsuario(std::string usuario,int descriptor);
-Usuario buscarUsuario(int sd,std::vector <Usuario> usuarios);
 bool funcionPassword(std::string usuario,std::string password,int descriptor);
+int indiceUsuario(int sd,std::vector <Usuario> usuarios);
 
 #endif

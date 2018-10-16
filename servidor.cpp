@@ -1,5 +1,8 @@
 #include <stdlib.h>
 #include "funciones.hpp"
+#include <queue>
+#include "partida.hpp"
+#include <iostream>
 
 #define MSG_SIZE 250
 #define MAX_CLIENTS 30
@@ -17,6 +20,7 @@ int main(){
 	int on,ret;
 	std::vector <Usuario> usuarios;
 	std::queue <Usuario> espera;
+	std::vector <Partida> partidas;
     
 	//Se abre el socket
   	sd=socket(AF_INET,SOCK_STREAM,0);
@@ -155,7 +159,7 @@ int main(){
 								}
 
 								else if(division[0]=="USUARIO"){ //Se ha recibido USUARIO
- 									if(buscarUsuario(i,usuarios).getEstado()!=CONECTADO){ //El usuario no esta en estado CONECTADO
+ 									if(usuarios[indiceUsuario(i,usuarios)].getEstado()!=CONECTADO){ //El usuario no esta en estado CONECTADO
 										bzero(buffer,sizeof(buffer));
 										sprintf(buffer,"-Err. No esta conectado\n");
 										send(i,buffer,sizeof(buffer),0);
@@ -164,8 +168,8 @@ int main(){
 									else{ //El usuario esta en estado CONECTADO
 										if(division.size()==2){ //Se cumple el formato de USUARIO
 											if(funcionUsuario(division[1],i)){ //Se ha validado el nombre de usuario
-												buscarUsuario(i,usuarios).setUsuario(division[1]); //Se almacena el nombre de usuario
-												buscarUsuario(i,usuarios).setEstado(NOMBRE); //Se cambia el estado del usuario a NOMBRE
+												usuarios[indiceUsuario(i,usuarios)].setUsuario(division[1]); //Se almacena el nombre de usuario
+												usuarios[indiceUsuario(i,usuarios)].setEstado(NOMBRE); //Se cambia el estado del usuario a NOMBRE
 												
 												bzero(buffer,sizeof(buffer));
 												sprintf(buffer,"+Ok. Usuario correcto\n");
@@ -182,7 +186,7 @@ int main(){
 								}
 								
 								else if(division[0]=="PASSWORD"){ //Se ha recibido PASSWORD
-									if(buscarUsuario(i,usuarios).getEstado()!=NOMBRE){ //El usuario no ha introducido su nombre anteriormente
+									if(usuarios[indiceUsuario(i,usuarios)].getEstado()!=NOMBRE){ //El usuario no ha introducido su nombre anteriormente
 										bzero(buffer,sizeof(buffer));
 										sprintf(buffer,"-Err. Aun no ha introducido ningun nombre de usuario\n");
 										send(i,buffer,sizeof(buffer),0);
@@ -190,9 +194,9 @@ int main(){
 									
 									else{ //El usuario ha introducido su nombre anteriormente
 										if(division.size()==2){ //Se cumple el formato de PASSWORD
-											if(funcionPassword(buscarUsuario(i,usuarios).getUsuario(),division[1],i)){ //Se ha validado al usuario
-												buscarUsuario(i,usuarios).setPassword(division[1]); //Se almacena la password del usuario
-												buscarUsuario(i,usuarios).setEstado(LOGUEADO); //Se cambia el estado del usuario a LOGUEADO
+											if(funcionPassword(usuarios[indiceUsuario(i,usuarios)].getUsuario(),division[1],i)){ //Se ha validado al usuario
+												usuarios[indiceUsuario(i,usuarios)].setPassword(division[1]); //Se almacena la password del usuario
+												usuarios[indiceUsuario(i,usuarios)].setEstado(LOGUEADO); //Se cambia el estado del usuario a LOGUEADO
 												
 												bzero(buffer,sizeof(buffer));
 												sprintf(buffer,"+Ok. Usuario validado\n");
@@ -208,30 +212,44 @@ int main(){
 									}
 								}
 								
-								else if(division[0]=="INICIAR-PARTIDA"){
-									if(buscarUsuario(i,usuarios).getEstado()!=LOGUEADO){
+								else if(division[0]=="INICIAR-PARTIDA"){ //Se ha recibido INICIAR-PARTIDA
+									if(usuarios[indiceUsuario(i,usuarios)].getEstado()!=LOGUEADO){ //El usuario no esta logueado
 										bzero(buffer,sizeof(buffer));
 										sprintf(buffer,"-Err. Aun no esta logueado\n");
 										send(i,buffer,sizeof(buffer),0);
 									}
 									
-									else{
-										if(division.size()!=1){
+									else{ //El usuario esta logueado
+										if(division.size()!=1){ //No se cumple el formato de INICIAR-PARTIDA
 											bzero(buffer,sizeof(buffer));
 											sprintf(buffer,"-Err. Formato incorrecto\n");
 											send(i,buffer,sizeof(buffer),0);
 										}
 										
-										else{
-											if(espera.size()<MAX_CLIENTS){
-												espera.push(buscarUsuario(i,usuarios));
+										else{ //Se cumple el formato de INICIAR-PARTIDA
+											if(espera.size()<MAX_CLIENTS){ //No se ha alcanzado el maximo de clientes en cola
+												espera.push(usuarios[indiceUsuario(i,usuarios)]); //Se introduce al usuario en la cola de espera
 												
-												if(espera.size()>=2){
-													//Aqui se unen dos jugadores en una partida
+												espera.back().setEstado(ESPERA); //Se cambia el estado del usuario a ESPERA
+												
+												if(espera.size()>=2){ //Hay jugadores suficientes en la cola de espera como para crear una partida
+													//Se extraen a los dos usuarios que van a jugar
+													Usuario usuario1=espera.front();
+													espera.pop();
+													Usuario usuario2=espera.front();
+													espera.pop();
+													
+													//Se cambia el estado de los usuarios a PARTIDA
+													usuario1.setEstado(PARTIDA);
+													usuario2.setEstado(PARTIDA);
+													
+													//Se crea una nueva partida
+													Partida partida(usuario1,usuario2);
+													partidas.push_back(partida);
 												}
 											}
 											
-											else{
+											else{ //Se ha alcanzado el maximo de clientes en cola
 												bzero(buffer,sizeof(buffer));
 												sprintf(buffer,"-Err. Cola de espera llena\n");
 												send(i,buffer,sizeof(buffer),0);

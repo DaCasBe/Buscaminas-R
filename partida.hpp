@@ -19,6 +19,6 @@ class Partida{
 		inline Usuario * getUsuario2(){
 			return &_usuario2;
 		}
-}
+};
 
 #endif

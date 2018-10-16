@@ -47,7 +47,7 @@ std::vector <std::string> dividirCadena(std::string cadena,std::string separador
 		cadena.erase(0,cadena.find(separador)+1); //Se borran la subcadena almacenada y el separador de la cadena
 	}
 
-	dividido.push_back(cadena.substr(0,cadena.size())); //Se almacena la ultima subcadena
+	dividido.push_back(cadena.substr(0,cadena.size()-1)); //Se almacena la ultima subcadena
     
 	return dividido;
 }
@@ -144,11 +144,11 @@ bool funcionUsuario(std::string usuario,int descriptor){
 	return false;
 }
 
-Usuario buscarUsuario(int sd,std::vector <Usuario> usuarios){
-	//Se busca al usuario en la lista de usuarios
+int indiceUsuario(int sd,std::vector <Usuario> usuarios){
+	//Se busca el indice del usuario especificado en la lista de usuarios
 	for(int i=0;i<usuarios.size();i++){
 		if(usuarios[i].getDescriptor()==sd){
-			return usuarios[i];
+			return i;
 		}
 	}
 }

@@ -4,6 +4,8 @@
 #define CONECTADO 0
 #define NOMBRE 1
 #define LOGUEADO 2
+#define ESPERA 3
+#define PARTIDA 4
 
 class Usuario{
 	private:
