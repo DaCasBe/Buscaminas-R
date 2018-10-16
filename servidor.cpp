@@ -16,6 +16,7 @@ int main(){
 	char identificador[MSG_SIZE];
 	int on,ret;
 	std::vector <Usuario> usuarios;
+	std::queue <Usuario> espera;
     
 	//Se abre el socket
   	sd=socket(AF_INET,SOCK_STREAM,0);
@@ -203,6 +204,38 @@ int main(){
 											bzero(buffer,sizeof(buffer));
                                             						sprintf(buffer,"-Err. Formato incorrecto, no ha introducido una password\n");
                                             						send(i,buffer,sizeof(buffer),0);
+										}
+									}
+								}
+								
+								else if(division[0]=="INICIAR-PARTIDA"){
+									if(buscarUsuario(i,usuarios).getEstado()!=LOGUEADO){
+										bzero(buffer,sizeof(buffer));
+										sprintf(buffer,"-Err. Aun no esta logueado\n");
+										send(i,buffer,sizeof(buffer),0);
+									}
+									
+									else{
+										if(division.size()!=1){
+											bzero(buffer,sizeof(buffer));
+											sprintf(buffer,"-Err. Formato incorrecto\n");
+											send(i,buffer,sizeof(buffer),0);
+										}
+										
+										else{
+											if(espera.size()<MAX_CLIENTS){
+												espera.push(buscarUsuario(i,usuarios));
+												
+												if(espera.size()>=2){
+													//Aqui se unen dos jugadores en una partida
+												}
+											}
+											
+											else{
+												bzero(buffer,sizeof(buffer));
+												sprintf(buffer,"-Err. Cola de espera llena\n");
+												send(i,buffer,sizeof(buffer),0);
+											}
 										}
 									}
 								}
