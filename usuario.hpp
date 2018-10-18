@@ -7,6 +7,8 @@
 #define ESPERA 3
 #define PARTIDA 4
 
+#include <string>
+
 class Usuario{
 	private:
 		int _descriptor; //Descriptor asociado al usuario
