@@ -6,6 +6,7 @@
 
 #define MSG_SIZE 250
 #define MAX_CLIENTS 30
+#define MAX_MATCHES 10 
 
 int main(){
 	int sd,new_sd;
@@ -232,7 +233,7 @@ int main(){
 												
 												espera.back().setEstado(ESPERA); //Se cambia el estado del usuario a ESPERA
 												
-												if(espera.size()>=2){ //Hay jugadores suficientes en la cola de espera como para crear una partida
+												if(espera.size()>=2 && partidas.size() < MAX_MATCHES){ //Hay jugadores suficientes en la cola de espera como para crear una partida
 													//Se extraen a los dos usuarios que van a jugar
 													Usuario usuario1=espera.front();
 													espera.pop();

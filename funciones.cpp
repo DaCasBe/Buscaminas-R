@@ -22,7 +22,7 @@ void salirCliente(int socket,fd_set * readfds,std::vector <Usuario> &usuarios){
 	bzero(buffer,sizeof(buffer));
 	sprintf(buffer,"Desconexión del cliente: %d\n",socket);
 
-	for(j=0;j<usuarios.size();j++){
+	for(j=0;j<(int)usuarios.size();j++){
 		if(usuarios[j].getDescriptor()!=socket){
 			send(usuarios[j].getDescriptor(),buffer,strlen(buffer),0);
 		}
@@ -146,11 +146,13 @@ bool funcionUsuario(std::string usuario,int descriptor){
 
 int indiceUsuario(int sd,std::vector <Usuario> usuarios){
 	//Se busca el indice del usuario especificado en la lista de usuarios
-	for(int i=0;i<usuarios.size();i++){
+	for(int i=0;i<(int)usuarios.size();i++){
 		if(usuarios[i].getDescriptor()==sd){
 			return i;
 		}
 	}
+
+	return -1;
 }
 
 bool funcionPassword(std::string usuario,std::string password,int descriptor){

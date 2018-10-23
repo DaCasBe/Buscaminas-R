@@ -25,7 +25,7 @@ int main(){
 	//Almacenamos la informacion relacionada con el socket
 	sockname.sin_family=AF_INET;
 	sockname.sin_port=htons(2050);
-	sockname.sin_addr.s_addr=inet_addr("127.0.0.1");
+	sockname.sin_addr.s_addr=inet_addr("172.16.223.14");
 
 	len_sockname=sizeof(sockname);
 	

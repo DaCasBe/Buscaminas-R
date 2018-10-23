@@ -2,7 +2,7 @@
 #define PARTIDA_HPP
 
 #define BRD_SIZE 10
-#define NUM_MINES 10
+#define NUM_MINES 20
 
 #include "usuario.hpp"
 #include <vector>
@@ -14,12 +14,23 @@ class Partida{
 		std::vector < std::vector <char> > _tablero_real; //Tablero con los valores reales del juego
 		std::vector < std::vector <char> > _tablero_muestra; //Tablero con los valores que se muestran a los jugadores
 		int _turno; //Indica de quien es el turno;
+		int _bandera1, _bandera2;
+
 
 	public:
 		Partida(Usuario usuario1,Usuario usuario2){
 			_usuario1=usuario1;
 			_usuario2=usuario2;
+			_bandera1=_bandera2=10;
 			_turno=1;
+
+			for(int i=0; i < 10 ; i++){
+				for(int j=0 ; j < 10 ; j++){
+					_tablero_muestra[i][j]='-';
+				}
+			}
+
+			generarTablero();
 		}
 		
 		inline Usuario * getUsuario1(){
@@ -42,9 +53,9 @@ class Partida{
 			return _turno;
 		}
 		
-		void generarTablero(std::vector < std::vector <char> > * tablero);
+		void generarTablero();
 		
-		void colocarMinas(std::vector < std::vector <char> > * tablero);
+		void colocarMinas();
 		
 		inline void cambiarTurno(){
 			if(getTurno()==1){ //Era el turno del jugador 1
@@ -55,6 +66,8 @@ class Partida{
 				_turno=1; //Le toca al jugador 1
 			}
 		}
+
+		void expadirCeros(int x, int y);
 };
 
 #endif
