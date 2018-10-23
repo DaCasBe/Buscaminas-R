@@ -68,6 +68,7 @@ class Partida{
 		}
 
 		void expadirCeros(int x, int y);
+		void ponerBandera(int x, int y);
 };
 
 #endif

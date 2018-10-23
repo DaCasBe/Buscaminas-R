@@ -247,3 +247,24 @@ void Partida::expadirCeros(int x, int y){
 	}
 
 }
+
+void Partida::ponerBandera(int x, int y){
+	if(getTurno()==1){
+		if(_tablero_muestra[x][y] == '-'){
+			_tablero_muestra[x][y] = 'A';
+		}
+		if(_tablero_muestra[x][y] == 'B'){
+			_tablero_muestra[x][y] = 'X';
+		}
+	}
+
+	else{
+		if(_tablero_muestra[x][y] == '-'){
+			_tablero_muestra[x][y] = 'B';
+		}
+		if(_tablero_muestra[x][y] == 'A'){
+			_tablero_muestra[x][y] = 'X';
+		}
+	}
+
+}
