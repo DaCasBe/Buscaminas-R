@@ -186,3 +186,15 @@ bool funcionPassword(std::string usuario,std::string password,int descriptor){
 	
 	return false;
 }
+
+int indicePartida(int descriptor, std::vector <Partida> partidas){
+
+	for(int i=0;i<(int)partidas.size();i++){
+		if(partidas[i].getUsuario1()->getDescriptor()==descriptor || partidas[i].getUsuario2()->getDescriptor()==descriptor){
+			return i;
+		}
+	}
+
+	return -1;
+
+}

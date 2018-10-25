@@ -268,3 +268,37 @@ void Partida::ponerBandera(int x, int y){
 	}
 
 }
+
+int Partida::destaparCasillas(int descriptor, int x , int y){
+	if(descriptor==_usuario1.getDescriptor() && getTurno()==1){ // la casilla es una bomba
+		if(_tablero_real[x][y]=='*'){
+			//game over
+			return -1;
+		}
+		else if(_tablero_real[x][y]!='*' && _tablero_muestra[x][y]=='-'){ // la casilla es valida
+			expadirCeros(x,y);
+			cambiarTurno();
+			return 0;
+		}
+		else{ // casilla invalida
+			return 1;
+		}
+	}
+	else if(descriptor==_usuario2.getDescriptor() && getTurno()==2){
+		if(_tablero_real[x][y]=='*'){
+			//game over
+			return -1;
+		}
+		else if(_tablero_real[x][y]!='*' && _tablero_muestra[x][y]=='-'){ // la casilla es valida
+			expadirCeros(x,y);
+			cambiarTurno();
+			return 0;
+		}
+		else{ // casilla invalida
+			return 1;
+		}
+	}
+	else{
+		return 2; // no es tu turno
+	}
+}

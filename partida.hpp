@@ -66,9 +66,9 @@ class Partida{
 				_turno=1; //Le toca al jugador 1
 			}
 		}
-
 		void expadirCeros(int x, int y);
 		void ponerBandera(int x, int y);
+		int destaparCasillas(int descriptor, int x , int y);
 };
 
 #endif

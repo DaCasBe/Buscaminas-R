@@ -258,6 +258,42 @@ int main(){
 										}
 									}
 								}
+								else if(division[0]=="DESCUBRIR"){ // comando descubrir del juego
+									if(usuarios[indiceUsuario(i,usuarios)].getEstado()!=PARTIDA){ //El usuario no esta logueado
+										bzero(buffer,sizeof(buffer));
+										sprintf(buffer,"-Err. Aun no esta en partida\n");
+										send(i,buffer,sizeof(buffer),0);
+
+									}else{ // El usuario esta logueado
+
+										division=dividirCadena(division[1],",");
+
+										if(division.size()!=2){ //No se cumple el formato de DESCUBRIR la casilla
+											bzero(buffer,sizeof(buffer));
+											sprintf(buffer,"-Err. Formato incorrecto\n");
+											send(i,buffer,sizeof(buffer),0);
+										}else{ // El comando esta bien escrito
+
+											if(division[0]=="A" || division[0]=="B" || division[0]=="C" || division[0]=="D" || division[0]=="E" || division[0]=="F" || division[0]=="G" || division[0]=="H" || division[0]=="I" || division[0]=="J"){ // La letra que ha introducido es correcta
+												if(division[1]=="0" || division[1]=="1" || division[1]=="2" || division[1]=="3" || division[1]=="4" || division[1]=="5" || division[1]=="6" || division[1]=="7" || division[1]=="8" || division[1]=="9"){ // La cifra que ha introducido es correcta
+													//continuar desde aqui
+													partidas[indicePartida(i,partidas)].destaparCasillas(i, atoi(division[0].c_str())-17 , atoi(division[1].c_str()));
+
+												}else{// la cifra que ha introducido es incorrecta
+													bzero(buffer,sizeof(buffer));
+													sprintf(buffer,"-Err. Formato incorrecto cifra del 0 al 9\n");
+													send(i,buffer,sizeof(buffer),0);
+												}
+
+											}else{ // la letra que ha introducido es incorrecta
+												bzero(buffer,sizeof(buffer));
+												sprintf(buffer,"-Err. Formato incorrecto letra de la A a la J\n");
+												send(i,buffer,sizeof(buffer),0);
+											}
+
+										}
+									}
+								}
                                     
 								else{ //No se ha recibido ningun comando valido
 									bzero(buffer,sizeof(buffer));

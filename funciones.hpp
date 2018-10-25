@@ -8,6 +8,7 @@
 #include <fstream>
 #include <vector>
 #include "usuario.hpp"
+#include "partida.hpp"
 
 #define MSG_SIZE 250
 
@@ -18,5 +19,6 @@ bool registro(std::string user,std::string password,int descriptor);
 bool funcionUsuario(std::string usuario,int descriptor);
 bool funcionPassword(std::string usuario,std::string password,int descriptor);
 int indiceUsuario(int sd,std::vector <Usuario> usuarios);
+int indicePartida(int descriptor, std::vector <Partida> partidas);
 
 #endif
