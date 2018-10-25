@@ -2,6 +2,9 @@
 #include <cstdlib>
 #include <string.h>
 #include <ctype.h>
+#include <arpa/inet.h>
+
+#define MSG_SIZE 250
 
 void Partida::generarTablero(){
 	int cont_minas;
@@ -301,4 +304,41 @@ int Partida::destaparCasillas(int descriptor, int x , int y){
 	else{
 		return 2; // no es tu turno
 	}
+}
+
+void Partida::enviarTablero(){
+	char buffer[MSG_SIZE];
+	std::string cadena;
+	int cont=0;
+	
+	//Se transforma el tablero en una cadena según el protocolo a seguir
+	for(int i=0;i<(int)getTableroMuestra().size();i++){
+		for(int j=0;j<(int)getTableroMuestra().size();j++){
+			cadena.push_back(getTableroMuestra()[i][j]);
+		
+			cont++;
+		
+			if((cont+1)%(2*MSG_SIZE)==0){
+				if(i!=9){
+					cadena.push_back(';');
+				}
+				
+				else{
+					cadena.push_back(',');
+				}
+			}
+			
+			cont++;
+		}
+	}
+	
+	//Se envia el tablero al jugador 1
+	bzero(buffer,sizeof(buffer));
+	strcpy(buffer,cadena.c_str());
+	send(getUsuario1()->getDescriptor(),buffer,sizeof(buffer),0);
+	
+	//Se envia el tablero al jugador 2
+	bzero(buffer,sizeof(buffer));
+	strcpy(buffer,cadena.c_str());
+	send(getUsuario2()->getDescriptor(),buffer,sizeof(buffer),0);
 }

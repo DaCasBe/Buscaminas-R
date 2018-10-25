@@ -32,12 +32,9 @@ int main(){
     		exit(1);	
 	}
     
-	/*Activaremos una propiedad del socket que permitir que otros
-	sockets puedan reutilizar cualquier puerto al que nos enlacemos.
-	Esto permitir en protocolos como el TCP, poder ejecutar un
-	mismo programa varias veces seguidas y enlazarlo siempre al
-	mismo puerto. De lo contrario habrÌa que esperar a que el puerto
-	quedase disponible (TIME_WAIT en el caso de TCP)*/
+	/*Activaremos una propiedad del socket que permitir que otros sockets puedan reutilizar cualquier puerto al que nos enlacemos.
+	Esto permitir en protocolos como el TCP, poder ejecutar un mismo programa varias veces seguidas y enlazarlo siempre al
+	mismo puerto. De lo contrario habrÌa que esperar a que el puerto quedase disponible (TIME_WAIT en el caso de TCP)*/
 	on=1;
 	ret=setsockopt(sd,SOL_SOCKET,SO_REUSEADDR,&on,sizeof(on));
 	
@@ -247,6 +244,8 @@ int main(){
 													//Se crea una nueva partida
 													Partida partida(usuario1,usuario2);
 													partidas.push_back(partida);
+													
+													partida.enviarTablero(); //Se envia el tablero a los jugadores
 												}
 											}
 											
