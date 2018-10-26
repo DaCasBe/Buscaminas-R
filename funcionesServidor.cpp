@@ -6,21 +6,10 @@ void salirCliente(int socket,fd_set * readfds,std::vector <Usuario> &usuarios){
     
 	close(socket); //Se cierra el socket
 	FD_CLR(socket,readfds);
-    
-	/*//Se reestructura la lista de clientes
-	for(j=0;j<usuarios.size()-1;j++){
-		if(usuarios[j].getDescriptor()==socket){
-			break;
-		}
-	}
-	
-	for(;j<usuarios.size()-1;j++){
-		usuarios[j].setDescriptor(usuarios[j+1].getDescriptor());
-	}*/
 
 	//Se manda un mensaje al resto de clientes
 	bzero(buffer,sizeof(buffer));
-	sprintf(buffer,"Desconexión del cliente: %d\n",socket);
+	sprintf(buffer,"-Err. Desconexión del cliente: %s\n",usuarios[indiceUsuario(socket,usuarios)].getUsuario().c_str());
 
 	for(j=0;j<(int)usuarios.size();j++){
 		if(usuarios[j].getDescriptor()!=socket){
@@ -28,7 +17,7 @@ void salirCliente(int socket,fd_set * readfds,std::vector <Usuario> &usuarios){
 		}
 	}
 
-	usuarios.erase(usuarios.begin()+j);
+	usuarios.erase(usuarios.begin()+indiceUsuario(socket,usuarios));
 }
 
 
@@ -92,7 +81,7 @@ bool registro(std::string user,std::string password,int descriptor){
 
 		leer.close(); //Se cierra el fichero de usuarios
 	}
-
+	
 	escribir.open("usuarios.txt",std::ios::app); //Se abre el fichero de usuarios
 
 	if(!escribir){ //No se ha podido abrir el fichero de usuarios
@@ -188,9 +177,8 @@ bool funcionPassword(std::string usuario,std::string password,int descriptor){
 }
 
 int indicePartida(int descriptor, std::vector <Partida> partidas){
-
-	for(int i=0;i<(int)partidas.size();i++){
-		if(partidas[i].getUsuario1()->getDescriptor()==descriptor || partidas[i].getUsuario2()->getDescriptor()==descriptor){
+	for(int i=0;i<(int)partidas.size();i++){ //Se busca entre todas las partidas
+		if(partidas[i].getUsuario1()->getDescriptor()==descriptor || partidas[i].getUsuario2()->getDescriptor()==descriptor){ //El descriptor coincide con el descriptor de uno de los jugadores de la partida
 			return i;
 		}
 	}
@@ -200,8 +188,8 @@ int indicePartida(int descriptor, std::vector <Partida> partidas){
 }
 
 bool existeUsuario(std::string nombre,std::vector <Usuario> usuarios){
-	for(int i=0;i<(int)usuarios.size();i++){
-		if(usuarios[i].getUsuario()==nombre){
+	for(int i=0;i<(int)usuarios.size();i++){ //Se busca entre todos los usuarios
+		if(usuarios[i].getUsuario()==nombre){ //Se ha encontrado al usuario
 			return true;
 		}
 	}
