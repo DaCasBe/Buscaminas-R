@@ -11,8 +11,8 @@ void Partida::generarTablero(){
 	
 	colocarMinas(); //Se colocan las minas en el tablero
 	
-	for(int i;i<BRD_SIZE;i++){
-		for(int j;j<BRD_SIZE;j++){
+	for(int i=0;i<BRD_SIZE;i++){
+		for(int j=0;j<BRD_SIZE;j++){
 			cont_minas=0;
 			
 			if(_tablero_real[i][j]!='*'){ //No hay ninguna mina en la casilla
@@ -214,8 +214,8 @@ void Partida::colocarMinas(){
 	int minas=0;
 	
 	do{ //No se terminaran de colocar minas mientras no esten todas colocadas
-		for(int i;i<BRD_SIZE;i++){
-			for(int j;j<BRD_SIZE;j++){
+		for(int i=0;i<BRD_SIZE;i++){
+			for(int j=0;j<BRD_SIZE;j++){
 				//Se coloca una mina en una casilla con una probabilidad de 1/100
 				if(((rand()%100)+1)<=1 and _tablero_real[i][j]!='*'){
 					_tablero_real[i][j]='*'; //Se coloca una mina
@@ -226,83 +226,94 @@ void Partida::colocarMinas(){
 	}while(minas<NUM_MINES);
 }
 
-void Partida::expadirCeros(int x, int y){
-	if(_tablero_real[x][y] != '*' && _tablero_real[x][y] != '0' && (_tablero_muestra[x][y] == '-' || _tablero_muestra[x][y] == 'A' || _tablero_muestra[x][y] == 'B' || strcmp(&_tablero_muestra[x][y],"AB")==0 ) ){ // si no es una bomba y no es una casilla vacia, es decir es 1,2,3,4,5,6,7,8 se destapa la casilla
-		_tablero_muestra[x][y]=_tablero_real[x][y];
-	}else{
-
-		if(_tablero_real[x][y] == '0' &&  (_tablero_muestra[x][y] == '-' || _tablero_muestra[x][y] == 'A' || _tablero_muestra[x][y] == 'B' || strcmp(&_tablero_muestra[x][y],"AB")==0 ) ){
-
-			_tablero_muestra[x][y]=_tablero_real[x][y];
-			if(x-1>=0){
-				expadirCeros(x-1,y);
+void Partida::expadirCeros(int x,int y){
+	if(getTableroReal()[x][y]!='*' and getTableroReal()[x][y]!='0' and (getTableroMuestra()[x][y]=='-' or getTableroMuestra()[x][y]=='A' or getTableroMuestra()[x][y]=='B' or strcmp(&getTableroMuestra()[x][y],"AB")==0)){ //La casilla no tiene una bomba, no es una casilla vacia y no esta descubierta
+		getTableroMuestra()[x][y]=getTableroReal()[x][y]; //Se descubre la casilla
+	}
+	
+	else{ //La casilla tiene una bomba, es una casilla vacia o esta descubierta
+		if(getTableroReal()[x][y]=='0' and  (getTableroMuestra()[x][y]=='-' or getTableroMuestra()[x][y]=='A' or getTableroMuestra()[x][y]=='B' or strcmp(&getTableroMuestra()[x][y],"AB")==0)){ //La casilla tiene un 0 y no esta descubierta
+			getTableroMuestra()[x][y]=getTableroReal()[x][y]; //Se descubre la casilla
+			
+			if(x-1>=0){ //Hay casillas arriba
+				expadirCeros(x-1,y); //Se descubre la casilla de arriba
 			}
-			if(y-1>=0){
-				expadirCeros(x,y-1);
+			
+			if(y-1>=0){ //Hay casillas a la izquierda
+				expadirCeros(x,y-1); //Se descubre la casilla de la izquierda
 			}
-			if(y+1<=10){
-				expadirCeros(x,y+1);
+			
+			if(y+1<=BRD_SIZE){ //Hay casillas a la derecha
+				expadirCeros(x,y+1); //Se descubre la casilla de la derecha
 			}
-			if(x+1<=10){
-				expadirCeros(x+1,y);
+			
+			if(x+1<=BRD_SIZE){ //Hay casillas abajo
+				expadirCeros(x+1,y); //Se descubre la casilla de abajo
 			}
 		}
 	}
-
 }
 
-void Partida::ponerBandera(int x, int y){
-	if(getTurno()==1){
-		if(_tablero_muestra[x][y] == '-'){
-			_tablero_muestra[x][y] = 'A';
+void Partida::ponerBandera(int x,int y){
+	if(getTurno()==1){ //Es el turno del jugador 1
+		if(getTableroMuestra()[x][y]=='-'){ //La casilla no esta descubierta
+			getTableroMuestra()[x][y]='A'; //Se coloca una bandera del jugador 1
 		}
-		if(_tablero_muestra[x][y] == 'B'){
-			_tablero_muestra[x][y] = 'X';
-		}
-	}
-
-	else{
-		if(_tablero_muestra[x][y] == '-'){
-			_tablero_muestra[x][y] = 'B';
-		}
-		if(_tablero_muestra[x][y] == 'A'){
-			_tablero_muestra[x][y] = 'X';
+		
+		if(getTableroMuestra()[x][y]=='B'){ //Hay una bandera del jugador 2 en la casilla
+			getTableroMuestra()[x][y]='X'; //Se dejan colocadas las banderas de ambos jugadores
 		}
 	}
 
+	else{ //Es el turno del jugador 2
+		if(getTableroMuestra()[x][y]=='-'){ //La casilla no esta descubierta
+			getTableroMuestra()[x][y]='B'; //Se coloca una bandera del jugador 2
+		}
+		
+		if(getTableroMuestra()[x][y]=='A'){ //Hay una bandera del jugador 1 en la casilla
+			getTableroMuestra()[x][y]='X'; //Se dejan colocadas las banderas de ambos jugadores
+		}
+	}
 }
 
-int Partida::destaparCasillas(int descriptor, int x , int y){
-	if(descriptor==_usuario1.getDescriptor() && getTurno()==1){ // la casilla es una bomba
-		if(_tablero_real[x][y]=='*'){
-			//game over
+int Partida::destaparCasillas(int descriptor,int x,int y){
+	if(descriptor==getUsuario1()->getDescriptor() and getTurno()==1){ //Descubre el jugador 1 en su turno
+		if(getTableroReal()[x][y]=='*'){ //Hay una mina en la casilla
 			return -1;
 		}
-		else if(_tablero_real[x][y]!='*' && _tablero_muestra[x][y]=='-'){ // la casilla es valida
+		
+		else if(getTableroReal()[x][y]!='*' and getTableroMuestra()[x][y]=='-'){ //La casilla no esta descubierta y no tiene una mina
 			expadirCeros(x,y);
-			cambiarTurno();
+			
+			cambiarTurno(); //Se cambia el turno
+			
 			return 0;
 		}
-		else{ // casilla invalida
+		else{ //La casilla es invalida
 			return 1;
 		}
 	}
-	else if(descriptor==_usuario2.getDescriptor() && getTurno()==2){
-		if(_tablero_real[x][y]=='*'){
-			//game over
+	
+	else if(descriptor==getUsuario2()->getDescriptor() and getTurno()==2){ //Descubre el jugador 2 en su turno
+		if(getTableroReal()[x][y]=='*'){ //Hay una mina en la casilla
 			return -1;
 		}
-		else if(_tablero_real[x][y]!='*' && _tablero_muestra[x][y]=='-'){ // la casilla es valida
+		
+		else if(getTableroReal()[x][y]!='*' and getTableroMuestra()[x][y]=='-'){ //La casilla no esta descubierta y no tiene una mina
 			expadirCeros(x,y);
-			cambiarTurno();
+			
+			cambiarTurno(); //Se cambia el turno
+			
 			return 0;
 		}
-		else{ // casilla invalida
+		
+		else{ //La casilla es invalida
 			return 1;
 		}
 	}
-	else{
-		return 2; // no es tu turno
+	
+	else{ //Algun jugador trata de descubrir cuando no le toca
+		return 2;
 	}
 }
 
@@ -315,11 +326,11 @@ void Partida::enviarTablero(){
 	for(int i=0;i<(int)getTableroMuestra().size();i++){
 		for(int j=0;j<(int)getTableroMuestra().size();j++){
 			cadena.push_back(getTableroMuestra()[i][j]);
-		
+			
 			cont++;
-		
-			if((cont+1)%(2*MSG_SIZE)==0){
-				if(i!=9){
+			
+			if(cont%2!=0){
+				if(j!=BRD_SIZE-1){
 					cadena.push_back(';');
 				}
 				
@@ -332,13 +343,8 @@ void Partida::enviarTablero(){
 		}
 	}
 	
-	//Se envia el tablero al jugador 1
-	bzero(buffer,sizeof(buffer));
+	//Se envia el tablero a ambos jugadores
 	strcpy(buffer,cadena.c_str());
 	send(getUsuario1()->getDescriptor(),buffer,sizeof(buffer),0);
-	
-	//Se envia el tablero al jugador 2
-	bzero(buffer,sizeof(buffer));
-	strcpy(buffer,cadena.c_str());
 	send(getUsuario2()->getDescriptor(),buffer,sizeof(buffer),0);
 }

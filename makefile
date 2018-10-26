@@ -1,4 +1,4 @@
-OBJETOS = partida.o funciones.o
+OBJETOS = partida.o funcionesServidor.o funcionesCliente.o
 
 CPPFLAGS = -c -g -Wall -ansi
 
@@ -13,13 +13,16 @@ servidor.exe: $(OBJETOS)
 						g++ servidor.cpp $(OBJETOS) -o servidor.exe 
 
 cliente.exe: cliente.cpp
-						g++ cliente.cpp -o cliente.exe 
+						g++ cliente.cpp funcionesCliente.o -o cliente.exe 
 
 partida.o: partida.cpp partida.hpp
 						g++ $(CPPFLAGS) partida.cpp
 
-funciones.o: funciones.cpp funciones.hpp
-						g++ $(CPPFLAGS) funciones.cpp
+funcionesServidor.o: funcionesServidor.cpp funcionesServidor.hpp
+						g++ $(CPPFLAGS) funcionesServidor.cpp
+						
+funcionesCliente.o: funcionesCliente.cpp funcionesCliente.hpp
+						g++ $(CPPFLAGS) funcionesCliente.cpp
 
 
 clean:

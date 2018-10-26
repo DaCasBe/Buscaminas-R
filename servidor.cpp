@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include "funciones.hpp"
+#include "funcionesServidor.hpp"
 #include <queue>
 #include "partida.hpp"
 #include <iostream>
@@ -22,6 +22,7 @@ int main(){
 	std::vector <Usuario> usuarios;
 	std::queue <Usuario> espera;
 	std::vector <Partida> partidas;
+	char * letra_aux;
     
 	//Se abre el socket
   	sd=socket(AF_INET,SOCK_STREAM,0);
@@ -93,7 +94,7 @@ int main(){
 							
 							else{ //Se ha alcanzado el maximo de clientes
 								bzero(buffer,sizeof(buffer));
-								strcpy(buffer,"Demasiados clientes conectados\n");
+								strcpy(buffer,"-Err. Demasiados clientes conectados\n");
 								send(new_sd,buffer,strlen(buffer),0);
 								
 								close(new_sd); //Se cierra el socket del cliente
@@ -112,7 +113,7 @@ int main(){
 						if(strcmp(buffer,"SALIR\n")==0){ //Se ha introducido SALIR
 							//Se desconecta a todos los clientes
 							for(j=0;j<usuarios.size();j++){
-								send(usuarios[j].getDescriptor(),"Desconexion servidor\n",strlen("Desconexion servidor\n"),0);
+								send(usuarios[j].getDescriptor(),"-Err. Desconexion servidor\n",strlen("-Err. Desconexion servidor\n"),0);
 								
 								//Se desconecta al usuario
 								close(usuarios[j].getDescriptor());
@@ -160,6 +161,12 @@ int main(){
  									if(usuarios[indiceUsuario(i,usuarios)].getEstado()!=CONECTADO){ //El usuario no esta en estado CONECTADO
 										bzero(buffer,sizeof(buffer));
 										sprintf(buffer,"-Err. No esta conectado\n");
+										send(i,buffer,sizeof(buffer),0);
+									}
+									
+									else if(existeUsuario(division[1],usuarios)){ //Ya hay alguien con su mismo nombre
+										bzero(buffer,sizeof(buffer));
+										sprintf(buffer,"-Err. Ya hay un usuario conectado con su mismo nombre\n");
 										send(i,buffer,sizeof(buffer),0);
 									}
                                     	
@@ -257,39 +264,45 @@ int main(){
 										}
 									}
 								}
-								else if(division[0]=="DESCUBRIR"){ // comando descubrir del juego
-									if(usuarios[indiceUsuario(i,usuarios)].getEstado()!=PARTIDA){ //El usuario no esta logueado
+								
+								else if(division[0]=="DESCUBRIR"){ //Se ha recibido DESCUBRIR
+									if(usuarios[indiceUsuario(i,usuarios)].getEstado()!=PARTIDA){ //El usuario no esta en partida
 										bzero(buffer,sizeof(buffer));
 										sprintf(buffer,"-Err. Aun no esta en partida\n");
 										send(i,buffer,sizeof(buffer),0);
-
-									}else{ // El usuario esta logueado
-
+									}
+									
+									else{ //El usuario esta en partida
 										division=dividirCadena(division[1],",");
 
-										if(division.size()!=2){ //No se cumple el formato de DESCUBRIR la casilla
+										if(division.size()!=2){ //No se cumple el formato de DESCUBRIR
 											bzero(buffer,sizeof(buffer));
 											sprintf(buffer,"-Err. Formato incorrecto\n");
 											send(i,buffer,sizeof(buffer),0);
-										}else{ // El comando esta bien escrito
+										}
+										
+										else{ //Se cumple el formato de DESCUBRIR
+											strcpy(letra_aux,division[0].c_str());
+											
+											if(/*division[0]=="A" || division[0]=="B" || division[0]=="C" || division[0]=="D" || division[0]=="E" || division[0]=="F" || division[0]=="G" || division[0]=="H" || division[0]=="I" || division[0]=="J"*/ letra_aux>="A" and letra_aux<="J"){ //La letra esta entre la A y la J
+												if(/*division[1]=="0" || division[1]=="1" || division[1]=="2" || division[1]=="3" || division[1]=="4" || division[1]=="5" || division[1]=="6" || division[1]=="7" || division[1]=="8" || division[1]=="9"*/ atoi(division[1].c_str())>=0 and atoi(division[1].c_str())<=BRD_SIZE){ //El numero esta entre el 0 y el 9
+													partidas[indicePartida(i,partidas)].destaparCasillas(i,atoi(division[0].c_str())-17,atoi(division[1].c_str())); //Se descubre la casilla especificada
 
-											if(division[0]=="A" || division[0]=="B" || division[0]=="C" || division[0]=="D" || division[0]=="E" || division[0]=="F" || division[0]=="G" || division[0]=="H" || division[0]=="I" || division[0]=="J"){ // La letra que ha introducido es correcta
-												if(division[1]=="0" || division[1]=="1" || division[1]=="2" || division[1]=="3" || division[1]=="4" || division[1]=="5" || division[1]=="6" || division[1]=="7" || division[1]=="8" || division[1]=="9"){ // La cifra que ha introducido es correcta
-													//continuar desde aqui
-													partidas[indicePartida(i,partidas)].destaparCasillas(i, atoi(division[0].c_str())-17 , atoi(division[1].c_str()));
-
-												}else{// la cifra que ha introducido es incorrecta
+												}
+												
+												else{ //El numero no esta entre el 0 y el 9
 													bzero(buffer,sizeof(buffer));
-													sprintf(buffer,"-Err. Formato incorrecto cifra del 0 al 9\n");
+													sprintf(buffer,"-Err. El numero debe estar entre 0 y 9\n");
 													send(i,buffer,sizeof(buffer),0);
 												}
 
-											}else{ // la letra que ha introducido es incorrecta
+											}
+											
+											else{ //La letra no esta entre la A y la J
 												bzero(buffer,sizeof(buffer));
-												sprintf(buffer,"-Err. Formato incorrecto letra de la A a la J\n");
+												sprintf(buffer,"-Err. La letra debe estar entre A y J\n");
 												send(i,buffer,sizeof(buffer),0);
 											}
-
 										}
 									}
 								}
@@ -298,17 +311,6 @@ int main(){
 									bzero(buffer,sizeof(buffer));
 									sprintf(buffer,"-Err. No ha usado ningun comando valido\n");
 									send(i,buffer,sizeof(buffer),0);
-								}
-
-								//Se envia la informacion al resto de usuarios
-								sprintf(identificador,"%d: %s",i,buffer);
-								bzero(buffer,sizeof(buffer));
-								strcpy(buffer,identificador);
-                                                                                                                                                                                                                                                        
-								for(j=0; j<usuarios.size(); j++){
-									if(usuarios[j].getDescriptor() != i){
-										send(usuarios[j].getDescriptor(),buffer,strlen(buffer),0); //Se envia la informacion al usuario
-									}
 								}
 							}
 						}

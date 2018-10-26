@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include "funcionesCliente.hpp"
 
 int main(){
 	int sd;
@@ -25,7 +26,7 @@ int main(){
 	//Almacenamos la informacion relacionada con el socket
 	sockname.sin_family=AF_INET;
 	sockname.sin_port=htons(2050);
-	sockname.sin_addr.s_addr=inet_addr("172.16.223.14");
+	sockname.sin_addr.s_addr=inet_addr("127.0.0.1");
 
 	len_sockname=sizeof(sockname);
 	
@@ -47,13 +48,23 @@ int main(){
 		salida=select(sd+1,&auxfds,NULL,NULL,NULL); //Esperamos a recibir mensajes del servidor
         
 		if(FD_ISSET(sd,&auxfds)){ //Hay un mensaje del servidor
-			//Se recibe el mensaje del servidor
+			//Se recibe el mensaje
 			bzero(buffer,sizeof(buffer));
 			recv(sd,buffer,sizeof(buffer),0);
-			printf("\n%s\n",buffer);
-            
-			if(strcmp(buffer,"Demasiados clientes conectados\n")==0 or strcmp(buffer,"Desconexion servidor\n")==0){ //Se ha recibido alguno de los mensajes especificados
-				fin=1;
+			
+			if(strstr(buffer,"+Ok")!=NULL or strstr(buffer,"-Err")!=NULL){ //Se ha recibido ningun mensaje convencional
+				if(strcmp(buffer,"-Err. Demasiados clientes conectados\n")==0 or strcmp(buffer,"-Err. Desconexion servidor\n")==0){ //Se ha recibido alguno de los mensajes especificados
+					fin=1;
+				}
+				
+				else{
+					//Se recibe el mensaje del servidor
+					printf("\n%s\n",buffer);
+				}
+			}
+			
+			else{ //Se ha recibido un tablero
+				recibirTablero(buffer); //Se procesa el tablero recibido
 			}
 		}
 		

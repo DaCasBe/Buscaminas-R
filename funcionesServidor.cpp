@@ -81,7 +81,7 @@ bool registro(std::string user,std::string password,int descriptor){
 	
 	else{ //Se ha podido abrir el fichero de usuarios
 		while(leer >> useraux2 >> passwordaux2){ //Se leen los nombres de usuario y las passwords del fichero de usuarios
-			if(strcpy(useraux1,useraux2)==0){ //Se ha encontrado una coincidencia en el nombre de usuario
+			if(strcmp(useraux1,useraux2)==0){ //Se ha encontrado una coincidencia en el nombre de usuario
 				bzero(buffer,sizeof(buffer));
 				sprintf(buffer,"-Err. El usuario ya esta registrado\n");
 				send(descriptor,buffer,sizeof(buffer),0);
@@ -104,7 +104,7 @@ bool registro(std::string user,std::string password,int descriptor){
 	}
 	
 	else{ //Se escribe el nombre de usuario y la password en el fichero de usuarios
-		escribir << useraux1 << " " <<passwordaux1;
+		escribir << useraux1 << " " <<passwordaux1 << std::endl;
 	}
 
 	escribir.close(); //Se cierra el fichero de usuarios
@@ -197,4 +197,14 @@ int indicePartida(int descriptor, std::vector <Partida> partidas){
 
 	return -1;
 
+}
+
+bool existeUsuario(std::string nombre,std::vector <Usuario> usuarios){
+	for(int i=0;i<(int)usuarios.size();i++){
+		if(usuarios[i].getUsuario()==nombre){
+			return true;
+		}
+	}
+	
+	return false;
 }
