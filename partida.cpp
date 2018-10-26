@@ -243,11 +243,11 @@ void Partida::expadirCeros(int x,int y){
 				expadirCeros(x,y-1); //Se descubre la casilla de la izquierda
 			}
 			
-			if(y+1<=BRD_SIZE){ //Hay casillas a la derecha
+			if(y+1<BRD_SIZE){ //Hay casillas a la derecha
 				expadirCeros(x,y+1); //Se descubre la casilla de la derecha
 			}
 			
-			if(x+1<=BRD_SIZE){ //Hay casillas abajo
+			if(x+1<BRD_SIZE){ //Hay casillas abajo
 				expadirCeros(x+1,y); //Se descubre la casilla de abajo
 			}
 		}

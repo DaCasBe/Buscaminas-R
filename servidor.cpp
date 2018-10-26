@@ -20,9 +20,8 @@ int main(){
 	char identificador[MSG_SIZE];
 	int on,ret;
 	std::vector <Usuario> usuarios;
-	std::queue <Usuario> espera;
+	std::vector <Usuario> espera;
 	std::vector <Partida> partidas;
-	char * letra_aux;
     
 	//Se abre el socket
   	sd=socket(AF_INET,SOCK_STREAM,0);
@@ -233,23 +232,21 @@ int main(){
 										
 										else{ //Se cumple el formato de INICIAR-PARTIDA
 											if(espera.size()<MAX_CLIENTS){ //No se ha alcanzado el maximo de clientes en cola
-												espera.push(usuarios[indiceUsuario(i,usuarios)]); //Se introduce al usuario en la cola de espera
+												usuarios[indiceUsuario(i,usuarios)].setEstado(ESPERA); //Se cambia el estado del usuario a ESPERA
+												espera.push_back(usuarios[indiceUsuario(i,usuarios)]); //Se introduce al usuario en la cola de espera
 												
-												espera.back().setEstado(ESPERA); //Se cambia el estado del usuario a ESPERA
-												
-												if(espera.size()>=2 && partidas.size() < MAX_MATCHES){ //Hay jugadores suficientes en la cola de espera como para crear una partida
-													//Se extraen a los dos usuarios que van a jugar
-													Usuario usuario1=espera.front();
-													espera.pop();
-													Usuario usuario2=espera.front();
-													espera.pop();
-													
-													//Se cambia el estado de los usuarios a PARTIDA
-													usuario1.setEstado(PARTIDA);
-													usuario2.setEstado(PARTIDA);
-													
+												if(espera.size()>=2 && partidas.size()<MAX_MATCHES){ //Hay jugadores suficientes en la cola de espera como para crear una partida y no se ha llegado al maximo de partidas simultaneas
 													//Se crea una nueva partida
-													Partida partida(usuario1,usuario2);
+													Partida partida;
+													
+													usuarios[indiceUsuario(espera[0].getDescriptor(),usuarios)].setEstado(PARTIDA);
+													partida.setUsuario1(espera[0]);
+													espera.erase(espera.begin());
+													
+													usuarios[indiceUsuario(espera[0].getDescriptor(),usuarios)].setEstado(PARTIDA);
+													partida.setUsuario2(espera[0]);
+													espera.erase(espera.begin());
+													
 													partidas.push_back(partida);
 													
 													partida.enviarTablero(); //Se envia el tablero a los jugadores
@@ -282,11 +279,9 @@ int main(){
 										}
 										
 										else{ //Se cumple el formato de DESCUBRIR
-											strcpy(letra_aux,division[0].c_str());
-											
-											if(/*division[0]=="A" || division[0]=="B" || division[0]=="C" || division[0]=="D" || division[0]=="E" || division[0]=="F" || division[0]=="G" || division[0]=="H" || division[0]=="I" || division[0]=="J"*/ letra_aux>="A" and letra_aux<="J"){ //La letra esta entre la A y la J
-												if(/*division[1]=="0" || division[1]=="1" || division[1]=="2" || division[1]=="3" || division[1]=="4" || division[1]=="5" || division[1]=="6" || division[1]=="7" || division[1]=="8" || division[1]=="9"*/ atoi(division[1].c_str())>=0 and atoi(division[1].c_str())<=BRD_SIZE){ //El numero esta entre el 0 y el 9
-													partidas[indicePartida(i,partidas)].destaparCasillas(i,atoi(division[0].c_str())-17,atoi(division[1].c_str())); //Se descubre la casilla especificada
+											if(division[0]>="A" and division[0]<="J"){ //La letra esta entre la A y la J
+												if(atoi(division[1].c_str())>=0 and atoi(division[1].c_str())<=BRD_SIZE){ //El numero esta entre el 0 y el 9
+													partidas[indicePartida(i,partidas)].destaparCasillas(i,atoi(division[0].c_str()-17),atoi(division[1].c_str())); //Se descubre la casilla especificada
 
 												}
 												

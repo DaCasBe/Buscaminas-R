@@ -20,10 +20,8 @@ class Partida{
 
 
 	public:
-		Partida(Usuario usuario1,Usuario usuario2){
+		Partida(){
 			//Se inicializan las variables
-			setUsuario1(usuario1);
-			setUsuario2(usuario2);
 			setBanderas1(NUM_FLAGS);
 			setBanderas2(NUM_FLAGS);
 			_turno=1;
