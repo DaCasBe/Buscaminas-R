@@ -41,6 +41,19 @@ std::vector <std::string> dividirCadena(std::string cadena,std::string separador
 	return dividido;
 }
 
+std::vector <std::string> dividirCadenaNumeros(std::string cadena,std::string separador){
+	std::vector <std::string> dividido;
+    
+	while(cadena.find(separador)<=MSG_SIZE){ //Se busca el separador dentro de la cadena
+		dividido.push_back(cadena.substr(0,cadena.find(separador))); //Se almacena la subcadena anterior al separador
+		cadena.erase(0,cadena.find(separador)+1); //Se borran la subcadena almacenada y el separador de la cadena
+	}
+
+	dividido.push_back(cadena.substr(0,cadena.size())); //Se almacena la ultima subcadena
+    
+	return dividido;
+}
+
 bool registro(std::string user,std::string password,int descriptor){
 	char buffer[MSG_SIZE];
 	char useraux1[80],useraux2[80];

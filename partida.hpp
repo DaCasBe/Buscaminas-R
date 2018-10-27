@@ -7,6 +7,7 @@
 
 #include "usuario.hpp"
 #include <vector>
+#include <iostream>
 
 class Partida{
 	private:
@@ -99,7 +100,7 @@ class Partida{
 		
 		void ponerBandera(int x, int y);
 		
-		int destaparCasillas(int descriptor, int x , int y);
+		int destaparCasillas(int descriptor, std::string x , int y);
 		
 		void enviarTablero();
 };

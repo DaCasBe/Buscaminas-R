@@ -276,16 +276,58 @@ void Partida::ponerBandera(int x,int y){
 	}
 }
 
-int Partida::destaparCasillas(int descriptor,int x,int y){
+int Partida::destaparCasillas(int descriptor,std::string x,int y){
+
+	int fila,columna;
+
+	columna=y-1;
+
+	if(!x.compare("A")){
+		fila=0;
+	}
+	if(!x.compare("B")){
+		fila=1;
+	}
+	if(!x.compare("C")){
+		fila=2;
+	}
+	if(!x.compare("D")){
+		fila=3;
+	}
+	if(!x.compare("E")){
+		fila=4;
+	}
+	if(!x.compare("F")){
+		fila=5;
+	}
+	if(!x.compare("G")){
+		fila=6;
+	}
+	if(!x.compare("H")){
+		fila=7;
+	}
+	if(!x.compare("I")){
+		fila=8;
+	}
+	if(!x.compare("J")){
+		fila=9;
+	}
+
+
+	std::cout << fila << " y " << columna << std::endl;
+
+
 	if(descriptor==getUsuario1()->getDescriptor() and getTurno()==1){ //Descubre el jugador 1 en su turno
-		if(getTableroReal()[x][y]=='*'){ //Hay una mina en la casilla
+		if(getTableroReal()[fila][columna]=='*'){ //Hay una mina en la casilla
 			return -1;
 		}
 		
-		else if(getTableroReal()[x][y]!='*' and getTableroMuestra()[x][y]=='-'){ //La casilla no esta descubierta y no tiene una mina
-			expadirCeros(x,y);
+		else if(getTableroReal()[fila][columna]!='*' and getTableroMuestra()[fila][columna]=='-'){ //La casilla no esta descubierta y no tiene una mina
+			expadirCeros(columna,fila);
 			
 			cambiarTurno(); //Se cambia el turno
+
+			enviarTablero();
 			
 			return 0;
 		}
@@ -295,14 +337,15 @@ int Partida::destaparCasillas(int descriptor,int x,int y){
 	}
 	
 	else if(descriptor==getUsuario2()->getDescriptor() and getTurno()==2){ //Descubre el jugador 2 en su turno
-		if(getTableroReal()[x][y]=='*'){ //Hay una mina en la casilla
+		if(getTableroReal()[fila][columna]=='*'){ //Hay una mina en la casilla
 			return -1;
 		}
 		
-		else if(getTableroReal()[x][y]!='*' and getTableroMuestra()[x][y]=='-'){ //La casilla no esta descubierta y no tiene una mina
-			expadirCeros(x,y);
+		else if(getTableroReal()[fila][columna]!='*' and getTableroMuestra()[fila][columna]=='-'){ //La casilla no esta descubierta y no tiene una mina
+			expadirCeros(columna,fila);
 			
 			cambiarTurno(); //Se cambia el turno
+			enviarTablero();
 			
 			return 0;
 		}

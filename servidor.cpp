@@ -249,6 +249,14 @@ int main(){
 													
 													partidas.push_back(partida);
 													
+													bzero(buffer,sizeof(buffer));
+													sprintf(buffer,"+Ok. Conectado a la partida eres el jugador A, es tu turno\n");
+													send(partida.getUsuario1()->getDescriptor(),buffer,sizeof(buffer),0);
+
+													bzero(buffer,sizeof(buffer));
+													sprintf(buffer,"+Ok. Conectado a la partida eres el jugador B, es el turno del jugador A\n");
+													send(partida.getUsuario2()->getDescriptor(),buffer,sizeof(buffer),0);
+
 													partida.enviarTablero(); //Se envia el tablero a los jugadores
 												}
 											}
@@ -270,7 +278,9 @@ int main(){
 									}
 									
 									else{ //El usuario esta en partida
-										division=dividirCadena(division[1],",");
+										//std::cout << division[0] << " y " << division[1] << std::endl;
+										division=dividirCadenaNumeros(division[1],",");
+										std::cout << division[0].c_str() << " y " << atoi(division[1].c_str()) << std::endl;
 
 										if(division.size()!=2){ //No se cumple el formato de DESCUBRIR
 											bzero(buffer,sizeof(buffer));
@@ -280,8 +290,10 @@ int main(){
 										
 										else{ //Se cumple el formato de DESCUBRIR
 											if(division[0]>="A" and division[0]<="J"){ //La letra esta entre la A y la J
-												if(atoi(division[1].c_str())>=0 and atoi(division[1].c_str())<=BRD_SIZE){ //El numero esta entre el 0 y el 9
-													partidas[indicePartida(i,partidas)].destaparCasillas(i,atoi(division[0].c_str()-17),atoi(division[1].c_str())); //Se descubre la casilla especificada
+												if(atoi(division[1].c_str())>=1 and atoi(division[1].c_str())<=BRD_SIZE){ //El numero esta entre el 0 y el 9
+													partidas[indicePartida(i,partidas)].destaparCasillas(i,division[0],atoi(division[1].c_str())); //Se descubre la casilla especificada
+													//std::cout << division[0] << " y " << division[1] << std::endl;
+													//partidas[indicePartida(i,partidas)].enviarTablero();
 
 												}
 												
