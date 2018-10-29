@@ -15,9 +15,10 @@ class Partida{
 		Usuario _usuario2; //Jugador 2
 		std::vector < std::vector <char> > _tablero_real; //Tablero con los valores reales del juego
 		std::vector < std::vector <char> > _tablero_muestra; //Tablero con los valores que se muestran a los jugadores
-		int _turno; //Indica de quien es el turno;
+		int _turno; //Indica de quien es el turno
 		int _banderas1; //Banderas que tiene el jugador 1
 		int _banderas2; //Banderas que tiene el jugador 2
+		bool _fin; //Indica si ha acabado la partida
 
 
 	public:
@@ -26,6 +27,7 @@ class Partida{
 			setBanderas1(NUM_FLAGS);
 			setBanderas2(NUM_FLAGS);
 			_turno=1;
+			_fin=false;
 			
 			//Se reserva memoria para el tablero real
 			_tablero_real.resize(BRD_SIZE);
@@ -44,6 +46,14 @@ class Partida{
 			}
 
 			generarTablero(); //Se genera el tablero de juego
+			
+			for(int i=0;i<BRD_SIZE;i++){
+				std::cout << "| ";
+				for(int j=0;j<BRD_SIZE;j++){
+					std::cout << getTableroReal()[i][j] << " | ";
+				}
+				std::cout << std::endl;
+			}
 		}
 		
 		inline void setUsuario1(Usuario usuario){
@@ -82,6 +92,14 @@ class Partida{
 			_banderas2=banderas;
 		}
 		
+		inline void setFin(bool fin){
+			_fin=fin;
+		}
+		
+		inline bool getFin(){
+			return _fin;
+		}
+		
 		void generarTablero();
 		
 		void colocarMinas();
@@ -91,7 +109,7 @@ class Partida{
 				_turno=2; //Le toca al jugador 2
 			}
 			
-			if(getTurno()==2){ //Era el turno del jugador 2
+			else{ //Era el turno del jugador 2
 				_turno=1; //Le toca al jugador 1
 			}
 		}

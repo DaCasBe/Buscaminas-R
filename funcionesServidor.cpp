@@ -1,4 +1,4 @@
-#include "funciones.hpp"
+#include "funcionesServidor.hpp"
 
 void salirCliente(int socket,fd_set * readfds,std::vector <Usuario> &usuarios){
 	char buffer[250];

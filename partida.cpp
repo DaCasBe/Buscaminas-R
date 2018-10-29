@@ -3,11 +3,12 @@
 #include <string.h>
 #include <ctype.h>
 #include <arpa/inet.h>
+#include <cstdio>
 
 #define MSG_SIZE 250
 
 void Partida::generarTablero(){
-	int cont_minas;
+	int cont_minas=0;
 	
 	colocarMinas(); //Se colocan las minas en el tablero
 	
@@ -202,7 +203,7 @@ void Partida::generarTablero(){
 					}
 				}
 				
-				_tablero_real[i][j]=char(cont_minas); //Se escribe en la casilla el numero de minas que tiene alrededor
+				_tablero_real[i][j]=cont_minas+'0'; //Se escribe en la casilla el numero de minas que tiene alrededor
 			}
 		}
 	}
@@ -228,12 +229,12 @@ void Partida::colocarMinas(){
 
 void Partida::expadirCeros(int x,int y){
 	if(getTableroReal()[x][y]!='*' and getTableroReal()[x][y]!='0' and (getTableroMuestra()[x][y]=='-' or getTableroMuestra()[x][y]=='A' or getTableroMuestra()[x][y]=='B' or strcmp(&getTableroMuestra()[x][y],"AB")==0)){ //La casilla no tiene una bomba, no es una casilla vacia y no esta descubierta
-		getTableroMuestra()[x][y]=getTableroReal()[x][y]; //Se descubre la casilla
+		_tablero_muestra[x][y]=getTableroReal()[x][y]; //Se descubre la casilla
 	}
 	
 	else{ //La casilla tiene una bomba, es una casilla vacia o esta descubierta
 		if(getTableroReal()[x][y]=='0' and  (getTableroMuestra()[x][y]=='-' or getTableroMuestra()[x][y]=='A' or getTableroMuestra()[x][y]=='B' or strcmp(&getTableroMuestra()[x][y],"AB")==0)){ //La casilla tiene un 0 y no esta descubierta
-			getTableroMuestra()[x][y]=getTableroReal()[x][y]; //Se descubre la casilla
+			_tablero_muestra[x][y]=getTableroReal()[x][y]; //Se descubre la casilla
 			
 			if(x-1>=0){ //Hay casillas arriba
 				expadirCeros(x-1,y); //Se descubre la casilla de arriba
@@ -277,86 +278,108 @@ void Partida::ponerBandera(int x,int y){
 }
 
 int Partida::destaparCasillas(int descriptor,std::string x,int y){
-
 	int fila,columna;
+	char buffer[MSG_SIZE];
 
-	columna=y-1;
+	//Se traducen las coordenadas
+	fila=y-1;
 
-	if(!x.compare("A")){
-		fila=0;
+	if(x=="A"){
+		columna=0;
 	}
-	if(!x.compare("B")){
-		fila=1;
+	if(x=="B"){
+		columna=1;
 	}
-	if(!x.compare("C")){
-		fila=2;
+	if(x=="C"){
+		columna=2;
 	}
-	if(!x.compare("D")){
-		fila=3;
+	if(x=="D"){
+		columna=3;
 	}
-	if(!x.compare("E")){
-		fila=4;
+	if(x=="E"){
+		columna=4;
 	}
-	if(!x.compare("F")){
-		fila=5;
+	if(x=="F"){
+		columna=5;
 	}
-	if(!x.compare("G")){
-		fila=6;
+	if(x=="G"){
+		columna=6;
 	}
-	if(!x.compare("H")){
-		fila=7;
+	if(x=="H"){
+		columna=7;
 	}
-	if(!x.compare("I")){
-		fila=8;
+	if(x=="I"){
+		columna=8;
 	}
-	if(!x.compare("J")){
-		fila=9;
+	if(x=="J"){
+		columna=9;
 	}
-
-
-	std::cout << fila << " y " << columna << std::endl;
-
 
 	if(descriptor==getUsuario1()->getDescriptor() and getTurno()==1){ //Descubre el jugador 1 en su turno
 		if(getTableroReal()[fila][columna]=='*'){ //Hay una mina en la casilla
-			return -1;
+			_tablero_muestra[fila][columna]=getTableroReal()[fila][columna]; //Se descubre la casilla
+			
+			enviarTablero(); //Se envia el tablero a los jugadores
+			
+			setFin(true); //Se acaba la partida
+			
+			return false;
 		}
 		
 		else if(getTableroReal()[fila][columna]!='*' and getTableroMuestra()[fila][columna]=='-'){ //La casilla no esta descubierta y no tiene una mina
-			expadirCeros(columna,fila);
+			expadirCeros(fila,columna);
 			
 			cambiarTurno(); //Se cambia el turno
 
-			enviarTablero();
+			enviarTablero(); //Se envia el tablero a los jugadores
 			
-			return 0;
+			return true;
 		}
-		else{ //La casilla es invalida
-			return 1;
+		else{ //La casilla no es valida
+			bzero(buffer,sizeof(buffer));
+			sprintf(buffer,"-Err. Coordenadas incorrectas\n");
+			send(descriptor,buffer,sizeof(buffer),0);
+			
+			return false;
 		}
 	}
 	
 	else if(descriptor==getUsuario2()->getDescriptor() and getTurno()==2){ //Descubre el jugador 2 en su turno
 		if(getTableroReal()[fila][columna]=='*'){ //Hay una mina en la casilla
-			return -1;
+			_tablero_muestra[fila][columna]=getTableroReal()[fila][columna]; //Se descubre la casilla
+			
+			enviarTablero(); //Se envia el tablero a los jugadores
+			
+			setFin(true); //Se acaba la partida
+			
+			return false;
 		}
 		
 		else if(getTableroReal()[fila][columna]!='*' and getTableroMuestra()[fila][columna]=='-'){ //La casilla no esta descubierta y no tiene una mina
-			expadirCeros(columna,fila);
+			expadirCeros(fila,columna);
 			
 			cambiarTurno(); //Se cambia el turno
-			enviarTablero();
 			
-			return 0;
+			enviarTablero(); //Se envia el tablero a los jugadores
+			
+			return true;
 		}
 		
-		else{ //La casilla es invalida
-			return 1;
+		else{ //La casilla no es valida
+			bzero(buffer,sizeof(buffer));
+			sprintf(buffer,"-Err. Coordenadas incorrectas\n");
+			send(descriptor,buffer,sizeof(buffer),0);
+			
+			return false;
 		}
 	}
 	
 	else{ //Algun jugador trata de descubrir cuando no le toca
-		return 2;
+		bzero(buffer,sizeof(buffer));
+		sprintf(buffer,"-Err. No es tu turno\n");
+		send(descriptor,buffer,sizeof(buffer),0);
+		
+		return false;
 	}
 }
 

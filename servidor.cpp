@@ -278,9 +278,7 @@ int main(){
 									}
 									
 									else{ //El usuario esta en partida
-										//std::cout << division[0] << " y " << division[1] << std::endl;
 										division=dividirCadenaNumeros(division[1],",");
-										std::cout << division[0].c_str() << " y " << atoi(division[1].c_str()) << std::endl;
 
 										if(division.size()!=2){ //No se cumple el formato de DESCUBRIR
 											bzero(buffer,sizeof(buffer));
@@ -291,10 +289,19 @@ int main(){
 										else{ //Se cumple el formato de DESCUBRIR
 											if(division[0]>="A" and division[0]<="J"){ //La letra esta entre la A y la J
 												if(atoi(division[1].c_str())>=1 and atoi(division[1].c_str())<=BRD_SIZE){ //El numero esta entre el 0 y el 9
-													partidas[indicePartida(i,partidas)].destaparCasillas(i,division[0],atoi(division[1].c_str())); //Se descubre la casilla especificada
-													//std::cout << division[0] << " y " << division[1] << std::endl;
-													//partidas[indicePartida(i,partidas)].enviarTablero();
-
+													if(!partidas[indicePartida(i,partidas)].destaparCasillas(i,division[0],atoi(division[1].c_str()))){ //No se descubre la casilla especificada
+														if(partidas[indicePartida(i,partidas)].getFin()){ //Se ha acabado la partida
+															bzero(buffer,sizeof(buffer));
+															sprintf(buffer,"+Ok. Fin de la partida\n");
+															send(partidas[indicePartida(i,partidas)].getUsuario1()->getDescriptor(),buffer,sizeof(buffer),0);
+															send(partidas[indicePartida(i,partidas)].getUsuario2()->getDescriptor(),buffer,sizeof(buffer),0);
+															
+															usuarios[indiceUsuario(partidas[indicePartida(i,partidas)].getUsuario1()->getDescriptor(),usuarios)].setEstado(LOGUEADO);
+															usuarios[indiceUsuario(partidas[indicePartida(i,partidas)].getUsuario2()->getDescriptor(),usuarios)].setEstado(LOGUEADO);
+															
+															partidas.erase(partidas.begin()+indicePartida(i,partidas)); //Se borra la partida
+														}
+													}
 												}
 												
 												else{ //El numero no esta entre el 0 y el 9
