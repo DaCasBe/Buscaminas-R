@@ -288,7 +288,7 @@ int main(){
 										
 										else{ //Se cumple el formato de DESCUBRIR
 											if(division[0]>="A" and division[0]<="J"){ //La letra esta entre la A y la J
-												if(atoi(division[1].c_str())>=1 and atoi(division[1].c_str())<=BRD_SIZE){ //El numero esta entre el 0 y el 9
+												if(atoi(division[1].c_str())>=1 and atoi(division[1].c_str())<=BRD_SIZE){ //El numero esta entre el 1 y el 10
 													if(!partidas[indicePartida(i,partidas)].destaparCasillas(i,division[0],atoi(division[1].c_str()))){ //No se descubre la casilla especificada
 														if(partidas[indicePartida(i,partidas)].getFin()){ //Se ha acabado la partida
 															bzero(buffer,sizeof(buffer));
@@ -296,6 +296,7 @@ int main(){
 															send(partidas[indicePartida(i,partidas)].getUsuario1()->getDescriptor(),buffer,sizeof(buffer),0);
 															send(partidas[indicePartida(i,partidas)].getUsuario2()->getDescriptor(),buffer,sizeof(buffer),0);
 															
+															//Se saca a los usuarios de la partida
 															usuarios[indiceUsuario(partidas[indicePartida(i,partidas)].getUsuario1()->getDescriptor(),usuarios)].setEstado(LOGUEADO);
 															usuarios[indiceUsuario(partidas[indicePartida(i,partidas)].getUsuario2()->getDescriptor(),usuarios)].setEstado(LOGUEADO);
 															
@@ -304,12 +305,64 @@ int main(){
 													}
 												}
 												
-												else{ //El numero no esta entre el 0 y el 9
+												else{ //El numero no esta entre el 1 y el 10
 													bzero(buffer,sizeof(buffer));
 													sprintf(buffer,"-Err. El numero debe estar entre 0 y 9\n");
 													send(i,buffer,sizeof(buffer),0);
 												}
 
+											}
+											
+											else{ //La letra no esta entre la A y la J
+												bzero(buffer,sizeof(buffer));
+												sprintf(buffer,"-Err. La letra debe estar entre A y J\n");
+												send(i,buffer,sizeof(buffer),0);
+											}
+										}
+									}
+								}
+								
+								else if(division[0]=="PONER-BANDERA"){ //Se ha recibido PONER-BANDERA
+									if(usuarios[indiceUsuario(i,usuarios)].getEstado()!=PARTIDA){ //El usuario no esta en partida
+										bzero(buffer,sizeof(buffer));
+										sprintf(buffer,"-Err. Aun no esta en partida\n");
+										send(i,buffer,sizeof(buffer),0);
+									}
+									
+									else{ //El usuario esta en partida
+										division=dividirCadenaNumeros(division[1],",");
+										
+										if(division.size()!=2){ //No se cumple el formato de PONER-BANDERA
+											bzero(buffer,sizeof(buffer));
+											sprintf(buffer,"-Err. Formato incorrecto\n");
+											send(i,buffer,sizeof(buffer),0);
+										}
+										
+										else{ //Se cumple el formato de PONER-BANDERA
+											if(division[0]>="A" and division[0]<="J"){ //La letra esta entre la A y la J
+												if(atoi(division[1].c_str())>=1 and atoi(division[1].c_str())<=BRD_SIZE){ //El numero esta entre el 1 y el 10
+													if(!partidas[indicePartida(i,partidas)].ponerBandera(i,division[0],atoi(division[1].c_str()))){ //No se pone la bandera en la casilla especificada
+														if(partidas[indicePartida(i,partidas)].getFin()){ //Se ha acabado la partida
+															bzero(buffer,sizeof(buffer));
+															sprintf(buffer,"+Ok. Fin de la partida\n");
+															send(partidas[indicePartida(i,partidas)].getUsuario1()->getDescriptor(),buffer,sizeof(buffer),0);
+															send(partidas[indicePartida(i,partidas)].getUsuario2()->getDescriptor(),buffer,sizeof(buffer),0);
+															
+															//Se saca a los usuarios de la partida
+															usuarios[indiceUsuario(partidas[indicePartida(i,partidas)].getUsuario1()->getDescriptor(),usuarios)].setEstado(LOGUEADO);
+															usuarios[indiceUsuario(partidas[indicePartida(i,partidas)].getUsuario2()->getDescriptor(),usuarios)].setEstado(LOGUEADO);
+															
+															partidas.erase(partidas.begin()+indicePartida(i,partidas)); //Se borra la partida
+														}
+													
+													}
+												}
+												
+												else{ //El numero no esta entre el 1 y el 10
+													bzero(buffer,sizeof(buffer));
+													sprintf(buffer,"-Err. El numero debe estar entre 0 y 9\n");
+													send(i,buffer,sizeof(buffer),0);
+												}
 											}
 											
 											else{ //La letra no esta entre la A y la J

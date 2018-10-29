@@ -255,25 +255,170 @@ void Partida::expadirCeros(int x,int y){
 	}
 }
 
-void Partida::ponerBandera(int x,int y){
-	if(getTurno()==1){ //Es el turno del jugador 1
-		if(getTableroMuestra()[x][y]=='-'){ //La casilla no esta descubierta
-			getTableroMuestra()[x][y]='A'; //Se coloca una bandera del jugador 1
+bool Partida::ponerBandera(int descriptor,std::string x,int y){
+	int fila,columna;
+	char buffer[MSG_SIZE];
+
+	//Se traducen las coordenadas
+	fila=y-1;
+
+	if(x=="A"){
+		columna=0;
+	}
+	if(x=="B"){
+		columna=1;
+	}
+	if(x=="C"){
+		columna=2;
+	}
+	if(x=="D"){
+		columna=3;
+	}
+	if(x=="E"){
+		columna=4;
+	}
+	if(x=="F"){
+		columna=5;
+	}
+	if(x=="G"){
+		columna=6;
+	}
+	if(x=="H"){
+		columna=7;
+	}
+	if(x=="I"){
+		columna=8;
+	}
+	if(x=="J"){
+		columna=9;
+	}
+	
+	if(descriptor==getUsuario1()->getDescriptor() and getTurno()==1){ //Pone bandera el jugador 1 en su turno
+		if(getTableroMuestra()[fila][columna]=='-'){ //La casilla no esta descubierta
+			_tablero_muestra[fila][columna]='A'; //Se coloca una bandera del jugador 1
+			
+			_banderas1--; //Se descuenta una bandera al jugador 1
+			
+			if(getBanderas1()==0){ //Al jugador 1 no le quedan banderas
+				setFin(true); //Se acaba la partida
+				
+				return true;
+			}
+			
+			else{ //Al jugador 1 le quedan banderas
+				cambiarTurno(); //Se cambia el turno
+				
+				enviarTablero(); //Se envia el tablero a los jugadores
+			
+				return true;
+			}
 		}
 		
-		if(getTableroMuestra()[x][y]=='B'){ //Hay una bandera del jugador 2 en la casilla
-			getTableroMuestra()[x][y]='X'; //Se dejan colocadas las banderas de ambos jugadores
+		else if(getTableroMuestra()[fila][columna]=='B'){ //Hay una bandera del jugador 2 en la casilla
+			_tablero_muestra[fila][columna]='X'; //Se dejan colocadas las banderas de ambos jugadores
+			
+			_banderas1--; //Se descuenta una bandera al jugador 1
+			
+			if(getBanderas1()==0){ //Al jugador 1 no le quedan banderas
+				setFin(true); //Se acaba la partida
+				
+				return true;
+			}
+			
+			else{ //Al jugador 1 le quedan banderas
+				cambiarTurno(); //Se cambia el turno
+				
+				enviarTablero(); //Se envia el tablero a los jugadores
+			
+				return true;
+			}
+		}
+		
+		else if(getTableroMuestra()[fila][columna]=='A' or getTableroMuestra()[fila][columna]=='X'){ //Ya hay una bandera del jugador 1 en la casilla
+			bzero(buffer,sizeof(buffer));
+			sprintf(buffer,"-Err. Ya hay una bandera tuya ahi\n");
+			send(descriptor,buffer,sizeof(buffer),0);
+		
+			return false;
+		}
+		
+		else{ //La casilla ya esta descubierta
+			bzero(buffer,sizeof(buffer));
+			sprintf(buffer,"-Err. Esa casilla ya esta descubierta\n");
+			send(descriptor,buffer,sizeof(buffer),0);
+		
+			return false;
 		}
 	}
 
-	else{ //Es el turno del jugador 2
-		if(getTableroMuestra()[x][y]=='-'){ //La casilla no esta descubierta
-			getTableroMuestra()[x][y]='B'; //Se coloca una bandera del jugador 2
+	else if(descriptor==getUsuario2()->getDescriptor() and getTurno()==2){ //Pone bandera el jugador 2 en su turno
+		if(getTableroMuestra()[fila][columna]=='-'){ //La casilla no esta descubierta
+			_tablero_muestra[fila][columna]='B'; //Se coloca una bandera del jugador 2
+			
+			_banderas2--; //Se descuenta una bandera al jugador 2
+			
+			if(getBanderas2()==0){ //Al jugador 2 no le quedan banderas
+				setFin(true); //Se acaba la partida
+				
+				return true;
+			}
+			
+			else{ //Al jugador 2 le quedan banderas
+				cambiarTurno(); //Se cambia el turno
+				
+				enviarTablero(); //Se envia el tablero a los jugadores
+			
+				return true;
+			}
+			
+			return true;
 		}
 		
-		if(getTableroMuestra()[x][y]=='A'){ //Hay una bandera del jugador 1 en la casilla
-			getTableroMuestra()[x][y]='X'; //Se dejan colocadas las banderas de ambos jugadores
+		else if(getTableroMuestra()[fila][columna]=='A'){ //Hay una bandera del jugador 1 en la casilla
+			_tablero_muestra[fila][columna]='X'; //Se dejan colocadas las banderas de ambos jugadores
+			
+			_banderas2--; //Se descuenta una bandera al jugador 2
+			
+			if(getBanderas2()==0){ //Al jugador 2 no le quedan banderas
+				setFin(true); //Se acaba la partida
+				
+				return true;
+			}
+			
+			else{ //Al jugador 2 le quedan banderas
+				cambiarTurno(); //Se cambia el turno
+				
+				enviarTablero(); //Se envia el tablero a los jugadores
+			
+				return true;
+			}
+			
+			return true;
 		}
+		
+		else if(getTableroMuestra()[fila][columna]=='B' or getTableroMuestra()[fila][columna]=='X'){ //Ya hay una bandera del jugador 2 en la casilla
+			bzero(buffer,sizeof(buffer));
+			sprintf(buffer,"-Err. Ya hay una bandera tuya ahi\n");
+			send(descriptor,buffer,sizeof(buffer),0);
+		
+			return false;
+		}
+		
+		else{ //La casilla ya esta descubierta
+			bzero(buffer,sizeof(buffer));
+			sprintf(buffer,"-Err. Esa casilla ya esta descubierta\n");
+			send(descriptor,buffer,sizeof(buffer),0);
+		
+			return false;
+		}
+	}
+	
+	else{ //Algun jugador trata de poner una bandera cuando no le toca
+		bzero(buffer,sizeof(buffer));
+		sprintf(buffer,"-Err. No es tu turno\n");
+		send(descriptor,buffer,sizeof(buffer),0);
+		
+		return false;
 	}
 }
 
@@ -316,6 +461,19 @@ int Partida::destaparCasillas(int descriptor,std::string x,int y){
 	}
 
 	if(descriptor==getUsuario1()->getDescriptor() and getTurno()==1){ //Descubre el jugador 1 en su turno
+		if(getTableroMuestra()[fila][columna]=='A'){ //Hay una bandera del jugador 1 en la casilla
+			_banderas1++; //Se devuelve la bandera al jugador 1
+		}
+			
+		if(getTableroMuestra()[fila][columna]=='B'){ //Hay una bandera del jugador 2 en la casilla
+			_banderas2++; //Se devuelve la bandera al jugador 2
+		}
+			
+		if(getTableroMuestra()[fila][columna]=='X'){ //Hay banderas de ambos jugadores en la casilla
+			_banderas1++; //Se devuelve la bandera al jugador 1
+			_banderas2++; //Se devuelve la bandera al jugador 2
+		}
+		
 		if(getTableroReal()[fila][columna]=='*'){ //Hay una mina en la casilla
 			_tablero_muestra[fila][columna]=getTableroReal()[fila][columna]; //Se descubre la casilla
 			
@@ -335,6 +493,7 @@ int Partida::destaparCasillas(int descriptor,std::string x,int y){
 			
 			return true;
 		}
+		
 		else{ //La casilla no es valida
 			bzero(buffer,sizeof(buffer));
 			sprintf(buffer,"-Err. Coordenadas incorrectas\n");
@@ -345,6 +504,19 @@ int Partida::destaparCasillas(int descriptor,std::string x,int y){
 	}
 	
 	else if(descriptor==getUsuario2()->getDescriptor() and getTurno()==2){ //Descubre el jugador 2 en su turno
+		if(getTableroMuestra()[fila][columna]=='A'){ //Hay una bandera del jugador 1 en la casilla
+			_banderas1++; //Se devuelve la bandera al jugador 1
+		}
+			
+		if(getTableroMuestra()[fila][columna]=='B'){ //Hay una bandera del jugador 2 en la casilla
+			_banderas2++; //Se devuelve la bandera al jugador 2
+		}
+			
+		if(getTableroMuestra()[fila][columna]=='X'){ //Hay banderas de ambos jugadores en la casilla
+			_banderas1++; //Se devuelve la bandera al jugador 1
+			_banderas2++; //Se devuelve la bandera al jugador 2
+		}
+		
 		if(getTableroReal()[fila][columna]=='*'){ //Hay una mina en la casilla
 			_tablero_muestra[fila][columna]=getTableroReal()[fila][columna]; //Se descubre la casilla
 			

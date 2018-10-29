@@ -24,8 +24,8 @@ class Partida{
 	public:
 		Partida(){
 			//Se inicializan las variables
-			setBanderas1(NUM_FLAGS);
-			setBanderas2(NUM_FLAGS);
+			_banderas1=NUM_FLAGS;
+			_banderas2=NUM_FLAGS;
 			_turno=1;
 			_fin=false;
 			
@@ -84,12 +84,12 @@ class Partida{
 			return _turno;
 		}
 		
-		inline void setBanderas1(int banderas){
-			_banderas1=banderas;
+		inline int getBanderas1(){
+			return _banderas1;
 		}
 		
-		inline void setBanderas2(int banderas){
-			_banderas2=banderas;
+		inline int getBanderas2(){
+			return _banderas2;
 		}
 		
 		inline void setFin(bool fin){
@@ -116,7 +116,7 @@ class Partida{
 		
 		void expadirCeros(int x, int y);
 		
-		void ponerBandera(int x, int y);
+		bool ponerBandera(int descriptor,std::string x, int y);
 		
 		int destaparCasillas(int descriptor, std::string x , int y);
 		
