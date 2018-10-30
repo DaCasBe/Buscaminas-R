@@ -1,21 +1,8 @@
 #include "funcionesServidor.hpp"
 
 void salirCliente(int socket,fd_set * readfds,std::vector <Usuario> &usuarios){
-	char buffer[250];
-	int j;
-    
 	close(socket); //Se cierra el socket
 	FD_CLR(socket,readfds);
-
-	//Se manda un mensaje al resto de clientes
-	bzero(buffer,sizeof(buffer));
-	sprintf(buffer,"-Err. Desconexión del cliente: %s\n",usuarios[indiceUsuario(socket,usuarios)].getUsuario().c_str());
-
-	for(j=0;j<(int)usuarios.size();j++){
-		if(usuarios[j].getDescriptor()!=socket){
-			send(usuarios[j].getDescriptor(),buffer,strlen(buffer),0);
-		}
-	}
 
 	usuarios.erase(usuarios.begin()+indiceUsuario(socket,usuarios));
 }

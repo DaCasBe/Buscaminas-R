@@ -557,29 +557,32 @@ int Partida::destaparCasillas(int descriptor,std::string x,int y){
 
 void Partida::enviarTablero(){
 	char buffer[MSG_SIZE];
-	std::string cadena;
-	int cont=0;
+	std::string cadena="";
 	
 	//Se transforma el tablero en una cadena según el protocolo a seguir
 	for(int i=0;i<(int)getTableroMuestra().size();i++){
 		for(int j=0;j<(int)getTableroMuestra().size();j++){
-			cadena.push_back(getTableroMuestra()[i][j]);
-			
-			cont++;
-			
-			if(cont%2!=0){
-				if(j!=BRD_SIZE-1){
-					cadena.push_back(';');
-				}
-				
-				else{
-					cadena.push_back(',');
-				}
+			if(getTableroMuestra()[i][j]=='X'){
+				cadena+="AB";
 			}
 			
-			cont++;
+			else{
+				cadena+=getTableroMuestra()[i][j];
+			}
+			
+			if(j<BRD_SIZE-1){
+				cadena+=',';
+			}
+			
+			else{
+				cadena+=';';
+			}
 		}
 	}
+	
+	/*for(int i=0;i<(int)cadena.size();i++){
+		std::cout << cadena[i] << " ";
+	}*/
 	
 	//Se envia el tablero a ambos jugadores
 	strcpy(buffer,cadena.c_str());

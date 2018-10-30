@@ -121,6 +121,16 @@ class Partida{
 		int destaparCasillas(int descriptor, std::string x , int y);
 		
 		void enviarTablero();
+		
+		int buscarUsuario(int descriptor){
+			if(getUsuario1()->getDescriptor()==descriptor){
+				return 1;
+			}
+			
+			else{
+				return 2;
+			}
+		}
 };
 
 #endif
