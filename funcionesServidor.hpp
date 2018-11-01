@@ -1,16 +1,7 @@
 #ifndef FUNCIONESSERVIDOR_HPP
 #define FUNCIONESSERVIDOR_HPP
 
-#include <string.h>
-#include <signal.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <fstream>
-#include <vector>
-#include "usuario.hpp"
 #include "partida.hpp"
-
-#define MSG_SIZE 250
 
 void manejador(int signum);
 void salirCliente(int socket,fd_set * readfds,std::vector <Usuario> &usuarios);

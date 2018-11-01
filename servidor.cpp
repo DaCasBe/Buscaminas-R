@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include "funcionesServidor.hpp"
-#include <queue>
-#include "partida.hpp"
-#include <iostream>
+#include <signal.h>
+#include <unistd.h>
+#include <fstream>
 
 #define MSG_SIZE 250
 #define MAX_CLIENTS 30
@@ -137,10 +137,18 @@ int main(){
 
 								if(usuarios[indiceUsuario(i,usuarios)].getEstado()==PARTIDA){
 									if(partidas[indicePartida(i,partidas)].buscarUsuario(i)==1){ //Quiere salir el jugador 1
+										bzero(buffer,sizeof(buffer));
+										sprintf(buffer,"+Ok. Su oponente ha finalizado la partida\n");
+										send(usuarios[indiceUsuario(partidas[indicePartida(i,partidas)].getUsuario2()->getDescriptor(),usuarios)].getDescriptor(),buffer,sizeof(buffer),0);
+										
 										usuarios[indiceUsuario(partidas[indicePartida(i,partidas)].getUsuario2()->getDescriptor(),usuarios)].setEstado(LOGUEADO); //Se saca al jugador 2 de la partida
 									}
 								
 									if(partidas[indicePartida(i,partidas)].buscarUsuario(i)==2){ //Quiere salir el jugador 2
+										bzero(buffer,sizeof(buffer));
+										sprintf(buffer,"+Ok. Su oponente ha finalizado la partida\n");
+										send(usuarios[indiceUsuario(partidas[indicePartida(i,partidas)].getUsuario1()->getDescriptor(),usuarios)].getDescriptor(),buffer,sizeof(buffer),0);
+										
 										usuarios[indiceUsuario(partidas[indicePartida(i,partidas)].getUsuario1()->getDescriptor(),usuarios)].setEstado(LOGUEADO); //Se saca al jugador 1 de la partida
 									}
 								
@@ -148,6 +156,7 @@ int main(){
 								
 									partidas.erase(partidas.begin()+indicePartida(i,partidas)); //Se borra la partida
 								}
+								
 								salirCliente(i,&readfds,usuarios); //Se desconecta al cliente
 							}
 							
@@ -155,25 +164,32 @@ int main(){
 								std::vector <std::string> division=dividirCadena(std::string(buffer)," "); //Se divide la cadena recibida
 								
 								if(division[0]=="REGISTRO"){ //Se ha recibido REGISTRO
-									if(division.size()==5 and division[1]=="-u" and division[3]=="-p"){ //Se cumple el formato de REGISTRO
-										if(registro(division[2],division[4],i)){ //Se ha registrado al usuario
+									if(usuarios[indiceUsuario(i,usuarios)].getEstado()==PARTIDA){
+										bzero(buffer,sizeof(buffer));
+										sprintf(buffer,"-Err. Esta en una partida\n");
+										send(i,buffer,sizeof(buffer),0);
+									}
+									else{
+										if(division.size()==5 and division[1]=="-u" and division[3]=="-p"){ //Se cumple el formato de REGISTRO
+											if(registro(division[2],division[4],i)){ //Se ha registrado al usuario
+												bzero(buffer,sizeof(buffer));
+												sprintf(buffer,"+Ok. Ha sido registrado correctamente\n");
+												send(i,buffer,sizeof(buffer),0);
+											}
+										}
+										
+										else{ //No se cumple el formato de REGISTRO
 											bzero(buffer,sizeof(buffer));
-											sprintf(buffer,"+Ok. Ha sido registrado correctamente\n");
+											sprintf(buffer,"-Err. Formato incorrecto, usuario o contraseña nulos\n");
 											send(i,buffer,sizeof(buffer),0);
 										}
-									}
-										
-									else{ //No se cumple el formato de REGISTRO
-										bzero(buffer,sizeof(buffer));
-										sprintf(buffer,"-Err. Formato incorrecto, usuario o contraseña nulos\n");
-										send(i,buffer,sizeof(buffer),0);
 									}
 								}
 
 								else if(division[0]=="USUARIO"){ //Se ha recibido USUARIO
- 									if(usuarios[indiceUsuario(i,usuarios)].getEstado()!=CONECTADO){ //El usuario no esta en estado CONECTADO
+ 									if(usuarios[indiceUsuario(i,usuarios)].getEstado()>=LOGUEADO){ //El usuario ya esta logueado
 										bzero(buffer,sizeof(buffer));
-										sprintf(buffer,"-Err. No esta conectado\n");
+										sprintf(buffer,"-Err. Ya esta logueado\n");
 										send(i,buffer,sizeof(buffer),0);
 									}
 									
@@ -246,6 +262,10 @@ int main(){
 										
 										else{ //Se cumple el formato de INICIAR-PARTIDA
 											if(espera.size()<MAX_CLIENTS){ //No se ha alcanzado el maximo de clientes en cola
+												bzero(buffer,sizeof(buffer));
+												sprintf(buffer,"+Ok. A la espera de emparejamiento...\n");
+												send(i,buffer,sizeof(buffer),0);
+											
 												usuarios[indiceUsuario(i,usuarios)].setEstado(ESPERA); //Se cambia el estado del usuario a ESPERA
 												espera.push_back(usuarios[indiceUsuario(i,usuarios)]); //Se introduce al usuario en la cola de espera
 												
@@ -264,11 +284,11 @@ int main(){
 													partidas.push_back(partida);
 													
 													bzero(buffer,sizeof(buffer));
-													sprintf(buffer,"+Ok. Conectado a la partida eres el jugador A, es tu turno\n");
+													sprintf(buffer,"+Ok. Empieza la partida, usted es el jugador A y es su turno\n");
 													send(partida.getUsuario1()->getDescriptor(),buffer,sizeof(buffer),0);
 
 													bzero(buffer,sizeof(buffer));
-													sprintf(buffer,"+Ok. Conectado a la partida eres el jugador B, es el turno del jugador A\n");
+													sprintf(buffer,"+Ok. Empieza la partida, usted es el jugador B y es el turno del jugador A\n");
 													send(partida.getUsuario2()->getDescriptor(),buffer,sizeof(buffer),0);
 
 													partida.enviarTablero(); //Se envia el tablero a los jugadores
@@ -312,11 +332,6 @@ int main(){
 													if(atoi(division[1].c_str())>=1 and atoi(division[1].c_str())<=BRD_SIZE){ //El numero esta entre el 1 y el 10
 														if(!partidas[indicePartida(i,partidas)].destaparCasillas(i,division[0],atoi(division[1].c_str()))){ //No se descubre la casilla especificada
 															if(partidas[indicePartida(i,partidas)].getFin()){ //Se ha acabado la partida
-																bzero(buffer,sizeof(buffer));
-																sprintf(buffer,"+Ok. Fin de la partida\n");
-																send(partidas[indicePartida(i,partidas)].getUsuario1()->getDescriptor(),buffer,sizeof(buffer),0);
-																send(partidas[indicePartida(i,partidas)].getUsuario2()->getDescriptor(),buffer,sizeof(buffer),0);
-															
 																//Se saca a los usuarios de la partida
 																usuarios[indiceUsuario(partidas[indicePartida(i,partidas)].getUsuario1()->getDescriptor(),usuarios)].setEstado(LOGUEADO);
 																usuarios[indiceUsuario(partidas[indicePartida(i,partidas)].getUsuario2()->getDescriptor(),usuarios)].setEstado(LOGUEADO);
@@ -371,12 +386,7 @@ int main(){
 												if(division[0]>="A" and division[0]<="J"){ //La letra esta entre la A y la J
 													if(atoi(division[1].c_str())>=1 and atoi(division[1].c_str())<=BRD_SIZE){ //El numero esta entre el 1 y el 10
 														if(!partidas[indicePartida(i,partidas)].ponerBandera(i,division[0],atoi(division[1].c_str()))){ //No se pone la bandera en la casilla especificada
-															if(partidas[indicePartida(i,partidas)].getFin()){ //Se ha acabado la partida
-																bzero(buffer,sizeof(buffer));
-																sprintf(buffer,"+Ok. Fin de la partida\n");
-																send(partidas[indicePartida(i,partidas)].getUsuario1()->getDescriptor(),buffer,sizeof(buffer),0);
-																send(partidas[indicePartida(i,partidas)].getUsuario2()->getDescriptor(),buffer,sizeof(buffer),0);
-															
+															if(partidas[indicePartida(i,partidas)].getFin()){ //Se ha acabado la partida															
 																//Se saca a los usuarios de la partida
 																usuarios[indiceUsuario(partidas[indicePartida(i,partidas)].getUsuario1()->getDescriptor(),usuarios)].setEstado(LOGUEADO);
 																usuarios[indiceUsuario(partidas[indicePartida(i,partidas)].getUsuario2()->getDescriptor(),usuarios)].setEstado(LOGUEADO);
@@ -415,12 +425,19 @@ int main(){
 						if(recibidos==0){ //El cliente ha introducido ctrl+c
 							if(usuarios[indiceUsuario(i,usuarios)].getEstado()==PARTIDA){
 								if(partidas[indicePartida(i,partidas)].buscarUsuario(i)==1){ //Quiere salir el jugador 1
-										usuarios[indiceUsuario(partidas[indicePartida(i,partidas)].getUsuario2()->getDescriptor(),usuarios)].setEstado(LOGUEADO); //Se saca al jugador 2 de la partida
-									}
+									bzero(buffer,sizeof(buffer));
+									sprintf(buffer,"+Ok. Su oponente ha finalizado la partida\n");
+									send(usuarios[indiceUsuario(partidas[indicePartida(i,partidas)].getUsuario2()->getDescriptor(),usuarios)].getDescriptor(),buffer,sizeof(buffer),0);
+									usuarios[indiceUsuario(partidas[indicePartida(i,partidas)].getUsuario2()->getDescriptor(),usuarios)].setEstado(LOGUEADO); //Se saca al jugador 2 de la partida
+								}
 								
-									if(partidas[indicePartida(i,partidas)].buscarUsuario(i)==2){ //Quiere salir el jugador 2
-										usuarios[indiceUsuario(partidas[indicePartida(i,partidas)].getUsuario1()->getDescriptor(),usuarios)].setEstado(LOGUEADO); //Se saca al jugador 1 de la partida
-									}
+								if(partidas[indicePartida(i,partidas)].buscarUsuario(i)==2){ //Quiere salir el jugador 2
+									bzero(buffer,sizeof(buffer));
+									sprintf(buffer,"+Ok. Su oponente ha finalizado la partida\n");
+									send(usuarios[indiceUsuario(partidas[indicePartida(i,partidas)].getUsuario1()->getDescriptor(),usuarios)].getDescriptor(),buffer,sizeof(buffer),0);
+										
+									usuarios[indiceUsuario(partidas[indicePartida(i,partidas)].getUsuario1()->getDescriptor(),usuarios)].setEstado(LOGUEADO); //Se saca al jugador 1 de la partida
+								}
 								
 								partidas[indicePartida(i,partidas)].setFin(true); //Se termina la partida
 								

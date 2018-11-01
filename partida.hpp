@@ -1,17 +1,14 @@
 #ifndef PARTIDA_HPP
 #define PARTIDA_HPP
 
-#define BRD_SIZE 10
-#define NUM_MINES 20
-#define NUM_FLAGS 10
-
 #include "usuario.hpp"
 #include <vector>
 #include <iostream>
-#include <cstdlib>
 #include <string.h>
-#include <ctype.h>
 #include <arpa/inet.h>
+
+#define BRD_SIZE 10
+#define NUM_FLAGS 10
 
 class Partida{
 	private:
@@ -141,6 +138,8 @@ class Partida{
 				return 2;
 			}
 		}
+		
+		void finBanderas();
 };
 
 #endif

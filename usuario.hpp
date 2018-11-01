@@ -1,13 +1,13 @@
 #ifndef USUARIO_HPP
 #define USUARIO_HPP
 
+#include <string>
+
 #define CONECTADO 0
 #define NOMBRE 1
 #define LOGUEADO 2
 #define ESPERA 3
 #define PARTIDA 4
-
-#include <string>
 
 class Usuario{
 	private:

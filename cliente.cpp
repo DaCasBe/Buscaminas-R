@@ -4,8 +4,15 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include "funcionesCliente.hpp"
+#include <iostream>
 
-int main(){
+int main(int argc,char ** argv){
+	if(argc!=2){ //La cantidad de argumentos no es correcta
+		std::cout << "Error de sintaxis: ./cliente.exe <direccion IP>" << std::endl;
+		
+		exit(-1);
+	}
+	
 	int sd;
 	struct sockaddr_in sockname;
 	char buffer[250];
@@ -26,7 +33,7 @@ int main(){
 	//Almacenamos la informacion relacionada con el socket
 	sockname.sin_family=AF_INET;
 	sockname.sin_port=htons(2050);
-	sockname.sin_addr.s_addr=inet_addr("127.0.0.1");
+	sockname.sin_addr.s_addr=inet_addr(argv[1]);
 
 	len_sockname=sizeof(sockname);
 	

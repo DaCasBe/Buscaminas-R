@@ -2,8 +2,6 @@
 #include <string.h>
 #include <iostream>
 
-#define BRD_SIZE 10
-
 void recibirTablero(char buffer[MSG_SIZE]){
 	//Se imprime el tablero
 	std::cout << std::endl << std::endl << "     A   B   C   D   E   F   G   H   I   J" << std::endl;

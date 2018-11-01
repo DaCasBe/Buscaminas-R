@@ -1,4 +1,9 @@
 #include "funcionesServidor.hpp"
+#include <signal.h>
+#include <unistd.h>
+#include <fstream>
+
+#define MSG_SIZE 250
 
 void salirCliente(int socket,fd_set * readfds,std::vector <Usuario> &usuarios){
 	close(socket); //Se cierra el socket

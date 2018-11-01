@@ -1,11 +1,9 @@
 #include "partida.hpp"
-#include <cstdlib>
-#include <string.h>
-#include <ctype.h>
-#include <arpa/inet.h>
 #include <cstdio>
+#include <cstdlib>
 
 #define MSG_SIZE 250
+#define NUM_MINES 20
 
 void Partida::generarTablero(){
 	int cont_minas=0;
@@ -302,7 +300,11 @@ bool Partida::ponerBandera(int descriptor,std::string x,int y){
 			if(getBanderas1()==0){ //Al jugador 1 no le quedan banderas
 				setFin(true); //Se acaba la partida
 				
-				return true;
+				enviarTablero(); //Se envia el tablero a los jugadores
+				
+				finBanderas(); //Se comprueban las banderas del tablero
+				
+				return false;
 			}
 			
 			else{ //Al jugador 1 le quedan banderas
@@ -322,7 +324,11 @@ bool Partida::ponerBandera(int descriptor,std::string x,int y){
 			if(getBanderas1()==0){ //Al jugador 1 no le quedan banderas
 				setFin(true); //Se acaba la partida
 				
-				return true;
+				enviarTablero(); //Se envia el tablero a los jugadores
+				
+				finBanderas(); //Se comprueban las banderas del tablero
+				
+				return false;
 			}
 			
 			else{ //Al jugador 1 le quedan banderas
@@ -336,7 +342,7 @@ bool Partida::ponerBandera(int descriptor,std::string x,int y){
 		
 		else if(getTableroMuestra()[fila][columna]=='A' or getTableroMuestra()[fila][columna]=='X'){ //Ya hay una bandera del jugador 1 en la casilla
 			bzero(buffer,sizeof(buffer));
-			sprintf(buffer,"-Err. Ya hay una bandera tuya ahi\n");
+			sprintf(buffer,"-Err. Ya tiene una bandera en esa casilla\n");
 			send(descriptor,buffer,sizeof(buffer),0);
 		
 			return false;
@@ -360,7 +366,11 @@ bool Partida::ponerBandera(int descriptor,std::string x,int y){
 			if(getBanderas2()==0){ //Al jugador 2 no le quedan banderas
 				setFin(true); //Se acaba la partida
 				
-				return true;
+				enviarTablero(); //Se envia el tablero a los jugadores
+				
+				finBanderas(); //Se comprueban las banderas del tablero
+				
+				return false;
 			}
 			
 			else{ //Al jugador 2 le quedan banderas
@@ -382,7 +392,11 @@ bool Partida::ponerBandera(int descriptor,std::string x,int y){
 			if(getBanderas2()==0){ //Al jugador 2 no le quedan banderas
 				setFin(true); //Se acaba la partida
 				
-				return true;
+				enviarTablero(); //Se envia el tablero a los jugadores
+				
+				finBanderas(); //Se comprueban las banderas del tablero
+				
+				return false;
 			}
 			
 			else{ //Al jugador 2 le quedan banderas
@@ -398,7 +412,7 @@ bool Partida::ponerBandera(int descriptor,std::string x,int y){
 		
 		else if(getTableroMuestra()[fila][columna]=='B' or getTableroMuestra()[fila][columna]=='X'){ //Ya hay una bandera del jugador 2 en la casilla
 			bzero(buffer,sizeof(buffer));
-			sprintf(buffer,"-Err. Ya hay una bandera tuya ahi\n");
+			sprintf(buffer,"-Err. Ya tiene una bandera en esa casilla\n");
 			send(descriptor,buffer,sizeof(buffer),0);
 		
 			return false;
@@ -415,7 +429,7 @@ bool Partida::ponerBandera(int descriptor,std::string x,int y){
 	
 	else{ //Algun jugador trata de poner una bandera cuando no le toca
 		bzero(buffer,sizeof(buffer));
-		sprintf(buffer,"-Err. No es tu turno\n");
+		sprintf(buffer,"-Err. Debe esperar su turno\n");
 		send(descriptor,buffer,sizeof(buffer),0);
 		
 		return false;
@@ -481,6 +495,12 @@ int Partida::destaparCasillas(int descriptor,std::string x,int y){
 			
 			setFin(true); //Se acaba la partida
 			
+			bzero(buffer,sizeof(buffer));
+			sprintf(buffer,"+Ok. Ha explotado una mina, ha perdido\n");
+			send(getUsuario1()->getDescriptor(),buffer,sizeof(buffer),0);
+			sprintf(buffer,"+Ok. Su oponente ha explotado una mina, ha ganado\n");
+			send(getUsuario2()->getDescriptor(),buffer,sizeof(buffer),0);
+			
 			return false;
 		}
 		
@@ -524,6 +544,12 @@ int Partida::destaparCasillas(int descriptor,std::string x,int y){
 			
 			setFin(true); //Se acaba la partida
 			
+			bzero(buffer,sizeof(buffer));
+			sprintf(buffer,"+Ok. Ha explotado una mina, ha perdido\n");
+			send(getUsuario2()->getDescriptor(),buffer,sizeof(buffer),0);
+			sprintf(buffer,"+Ok. Su oponente ha explotado una mina, ha ganado\n");
+			send(getUsuario1()->getDescriptor(),buffer,sizeof(buffer),0);
+			
 			return false;
 		}
 		
@@ -548,7 +574,7 @@ int Partida::destaparCasillas(int descriptor,std::string x,int y){
 	
 	else{ //Algun jugador trata de descubrir cuando no le toca
 		bzero(buffer,sizeof(buffer));
-		sprintf(buffer,"-Err. No es tu turno\n");
+		sprintf(buffer,"-Err. Debe esperar su turno\n");
 		send(descriptor,buffer,sizeof(buffer),0);
 		
 		return false;
@@ -588,4 +614,53 @@ void Partida::enviarTablero(){
 	strcpy(buffer,cadena.c_str());
 	send(getUsuario1()->getDescriptor(),buffer,sizeof(buffer),0);
 	send(getUsuario2()->getDescriptor(),buffer,sizeof(buffer),0);
+}
+
+void Partida::finBanderas(){
+	char buffer[MSG_SIZE];
+	bool perder=false;
+	
+	//Se explora todo el tablero
+	for(int i=0;i<(int)getTableroMuestra().size();i++){
+		for(int j=0;j<(int)getTableroMuestra().size();j++){
+			if((getTableroMuestra()[i][j]=='A' or getTableroMuestra()[i][j]=='X') and getTableroReal()[i][j]!='*'){ //Hay una bandera del jugador 1 donde no hay ninguna mina
+				bzero(buffer,sizeof(buffer));
+				sprintf(buffer,"+Ok. Banderas mal colocadas, has perdido.\n");
+				send(getUsuario1()->getDescriptor(),buffer,sizeof(buffer),0);
+				
+				perder=true; //El jugador 1 pierde
+				
+				break;
+			}
+		}
+	}
+	
+	if(!perder){ //El jugador 1 no ha perdido
+		bzero(buffer,sizeof(buffer));
+		sprintf(buffer,"+Ok. Banderas bien colocadas, has ganado.\n");
+		send(getUsuario1()->getDescriptor(),buffer,sizeof(buffer),0);
+	}
+	
+	perder=false;
+	
+	//Se explora todo el tablero
+	for(int i=0;i<(int)getTableroMuestra().size();i++){
+		for(int j=0;j<(int)getTableroMuestra().size();j++){
+			if((getTableroMuestra()[i][j]=='B' or getTableroMuestra()[i][j]=='X') and getTableroReal()[i][j]!='*'){ //Hay una bandera del jugador 2 donde no hay ninguna mina
+				bzero(buffer,sizeof(buffer));
+				sprintf(buffer,"+Ok. Banderas mal colocadas, has perdido.\n");
+				send(getUsuario2()->getDescriptor(),buffer,sizeof(buffer),0);
+				
+				perder=true; //El jugador 2 pierde
+				
+				break;
+			}
+		}
+	}
+	
+	if(!perder){ //El jugador 2 no ha perdido
+		bzero(buffer,sizeof(buffer));
+		sprintf(buffer,"+Ok. Banderas bien colocadas, has ganado.\n");
+		send(getUsuario2()->getDescriptor(),buffer,sizeof(buffer),0);
+	}
 }
