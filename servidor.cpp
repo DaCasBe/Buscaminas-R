@@ -125,6 +125,27 @@ int main(){
                                     
 							exit(-1);
 						}
+						
+						else if(strcmp(buffer,"MOSTRAR\n")==0){ //Se ha introducido MOSTRAR
+							if(partidas.size()==0){ //No hay partidas
+								std::cout << "No hay partidas" << std::endl << std::endl;
+							}
+							
+							else{ //Hay al menos una partida
+								//Se muestran los tableros de todas las partidas
+								for(j=0;j<(int)partidas.size();j++){
+									std::cout << "Partida " << j+1 << std::endl;
+								
+									partidas[j].mostrarTablero();
+								
+									std::cout << std::endl;
+								}
+							}
+						}
+						
+						else{ //No se ha introducido ningun comando valido
+							std::cout << "No ha usado ningun comando valido" << std::endl << std::endl;
+						}
 					}
 					
 					else{
@@ -269,7 +290,7 @@ int main(){
 												usuarios[indiceUsuario(i,usuarios)].setEstado(ESPERA); //Se cambia el estado del usuario a ESPERA
 												espera.push_back(usuarios[indiceUsuario(i,usuarios)]); //Se introduce al usuario en la cola de espera
 												
-												if(espera.size()>=2 && partidas.size()<MAX_MATCHES){ //Hay jugadores suficientes en la cola de espera como para crear una partida y no se ha llegado al maximo de partidas simultaneas
+												if(espera.size()>=2 and partidas.size()<MAX_MATCHES){ //Hay jugadores suficientes en la cola de espera como para crear una partida y no se ha llegado al maximo de partidas simultaneas
 													//Se crea una nueva partida
 													Partida partida;
 													

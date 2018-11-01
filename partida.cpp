@@ -606,10 +606,6 @@ void Partida::enviarTablero(){
 		}
 	}
 	
-	/*for(int i=0;i<(int)cadena.size();i++){
-		std::cout << cadena[i] << " ";
-	}*/
-	
 	//Se envia el tablero a ambos jugadores
 	strcpy(buffer,cadena.c_str());
 	send(getUsuario1()->getDescriptor(),buffer,sizeof(buffer),0);
@@ -662,5 +658,31 @@ void Partida::finBanderas(){
 		bzero(buffer,sizeof(buffer));
 		sprintf(buffer,"+Ok. Banderas bien colocadas, has ganado.\n");
 		send(getUsuario2()->getDescriptor(),buffer,sizeof(buffer),0);
+	}
+}
+
+void Partida::mostrarTablero(){
+	std::cout << std::endl << "      A   B   C   D   E   F   G   H   I   J" << std::endl;
+	
+	for(int i=0;i<(int)getTableroReal().size();i++){
+		if(i<9){
+			std::cout << i+1 << "   |";
+		}
+		
+		else{
+			std::cout << i+1 << "  |";
+		}
+		
+		for(int j=0;j<(int)getTableroReal().size();j++){
+			if(getTableroReal()[i][j]=='X'){
+				std::cout << " " << getTableroReal()[i][j] << "|";
+			}
+			
+			else{
+				std::cout << " " << getTableroReal()[i][j] << " |";
+			}
+		}
+		
+		std::cout << std::endl;
 	}
 }

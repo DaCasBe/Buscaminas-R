@@ -47,14 +47,6 @@ class Partida{
 			}
 
 			generarTablero(); //Se genera el tablero de juego
-			
-			for(int i=0;i<BRD_SIZE;i++){
-				std::cout << "| ";
-				for(int j=0;j<BRD_SIZE;j++){
-					std::cout << getTableroReal()[i][j] << " | ";
-				}
-				std::cout << std::endl;
-			}
 		}
 		
 		inline void setUsuario1(Usuario usuario){
@@ -140,6 +132,8 @@ class Partida{
 		}
 		
 		void finBanderas();
+		
+		void mostrarTablero();
 };
 
 #endif

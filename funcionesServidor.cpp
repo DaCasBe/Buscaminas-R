@@ -14,10 +14,8 @@ void salirCliente(int socket,fd_set * readfds,std::vector <Usuario> &usuarios){
 
 
 void manejador(int signum){
-	printf("\nSe ha recibido la señal sigint\n");
+	printf("\nIntroduzca SALIR para cerrar el servidor\n\n");
 	signal(SIGINT,manejador);
-    
-	//Implementar lo que se desee realizar cuando ocurra la excepción de ctrl+c en el servidor
 }
 
 std::vector <std::string> dividirCadena(std::string cadena,std::string separador){

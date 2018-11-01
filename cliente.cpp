@@ -48,6 +48,16 @@ int main(int argc,char ** argv){
 	FD_ZERO(&readfds);
 	FD_SET(0,&readfds);
 	FD_SET(sd,&readfds);
+	
+	std::cout << "Bienvenido a Buscaminas" << std::endl;
+	std::cout << "Estos son los comandos que puedes usar: " << std::endl;
+	std::cout << "    REGISTRO -u <nombre> -p <password>: registrarse en el juego" << std::endl;
+	std::cout << "    USUARIO <nombre>: introducir un nombre de usuario" << std::endl;
+	std::cout << "    PASSWORD <password>: introducir una password para loguearse" << std::endl;
+	std::cout << "    INICIAR-PARTIDA: entrar en cola para esperar a poder jugar" << std::endl;
+	std::cout << "    DESCUBRIR <letra>,<numero>: descubrir una casilla" << std::endl;
+	std::cout << "    PONER-BANDERA <letra>,<numero>: indicar que hay una mina en una casilla" << std::endl;
+	std::cout << "    SALIR: cerrar el programa" << std::endl << std::endl << std::endl << std::endl;
 
 	do{ //Bucle del cliente
 		auxfds=readfds;
