@@ -6,12 +6,29 @@
 
 void recibirTablero(char buffer[MSG_SIZE]){
 	//Se imprime el tablero
-	std::cout << std::endl << std::endl << "  A   B   C   D   E   F   G   H   I   J" << std::endl;
+	std::cout << std::endl << std::endl << "     A   B   C   D   E   F   G   H   I   J" << std::endl;
+	int cont=1;
 	
 	for(int i=0;i<(int)strlen(buffer);i++){
+		if(i==0){
+			std::cout << cont << "  ";
+			cont++;
+		}
+
 		if(buffer[i]!=','){
 			if(buffer[i]==';'){
-				std::cout << "|" << std::endl;
+				if(cont!=11){
+					if(cont==10){
+						std::cout << "|" << std::endl << cont << " ";
+						cont++;
+					}else{
+						std::cout << "|" << std::endl << cont << "  ";
+						cont++;
+					}
+				}
+				else{
+					std::cout << "|" << std::endl;
+				}
 			}
 			
 			else if(buffer[i]=='A' and buffer[i+1]=='B'){

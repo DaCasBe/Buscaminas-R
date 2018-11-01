@@ -8,6 +8,10 @@
 #include "usuario.hpp"
 #include <vector>
 #include <iostream>
+#include <cstdlib>
+#include <string.h>
+#include <ctype.h>
+#include <arpa/inet.h>
 
 class Partida{
 	private:
@@ -105,12 +109,18 @@ class Partida{
 		void colocarMinas();
 		
 		inline void cambiarTurno(){
+			char buffer[255];
+
 			if(getTurno()==1){ //Era el turno del jugador 1
 				_turno=2; //Le toca al jugador 2
+				strcpy(buffer,"+Ok. Es tu turno\n");
+				send(getUsuario2()->getDescriptor(),buffer,strlen(buffer),0);
 			}
 			
 			else{ //Era el turno del jugador 2
 				_turno=1; //Le toca al jugador 1
+				strcpy(buffer,"+Ok. Es tu turno\n");
+				send(getUsuario1()->getDescriptor(),buffer,strlen(buffer),0);
 			}
 		}
 		

@@ -28,3 +28,6 @@ funcionesCliente.o: funcionesCliente.cpp funcionesCliente.hpp
 clean:
 	rm -rf *~ $(OBJETOS)
 
+clean-all:
+	rm -rf *~ $(OBJETOS) servidor.exe cliente.exe
+

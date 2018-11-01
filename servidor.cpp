@@ -134,18 +134,20 @@ int main(){
                             
 						if(recibidos>0){ //Se ha recibido un mensaje
 							if(strcmp(buffer,"SALIR\n")==0){ //Se ha recibido SALIR
-								if(partidas[indicePartida(i,partidas)].buscarUsuario(i)==1){ //Quiere salir el jugador 1
-									usuarios[indiceUsuario(partidas[indicePartida(i,partidas)].getUsuario2()->getDescriptor(),usuarios)].setEstado(LOGUEADO); //Se saca al jugador 2 de la partida
-								}
-							
-								if(partidas[indicePartida(i,partidas)].buscarUsuario(i)==2){ //Quiere salir el jugador 2
-									usuarios[indiceUsuario(partidas[indicePartida(i,partidas)].getUsuario1()->getDescriptor(),usuarios)].setEstado(LOGUEADO); //Se saca al jugador 1 de la partida
-								}
-							
-								partidas[indicePartida(i,partidas)].setFin(true); //Termina la partida
-							
-								partidas.erase(partidas.begin()+indicePartida(i,partidas)); //Se borra la partida
+
+								if(usuarios[indiceUsuario(i,usuarios)].getEstado()==PARTIDA){
+									if(partidas[indicePartida(i,partidas)].buscarUsuario(i)==1){ //Quiere salir el jugador 1
+										usuarios[indiceUsuario(partidas[indicePartida(i,partidas)].getUsuario2()->getDescriptor(),usuarios)].setEstado(LOGUEADO); //Se saca al jugador 2 de la partida
+									}
 								
+									if(partidas[indicePartida(i,partidas)].buscarUsuario(i)==2){ //Quiere salir el jugador 2
+										usuarios[indiceUsuario(partidas[indicePartida(i,partidas)].getUsuario1()->getDescriptor(),usuarios)].setEstado(LOGUEADO); //Se saca al jugador 1 de la partida
+									}
+								
+									partidas[indicePartida(i,partidas)].setFin(true); //Termina la partida
+								
+									partidas.erase(partidas.begin()+indicePartida(i,partidas)); //Se borra la partida
+								}
 								salirCliente(i,&readfds,usuarios); //Se desconecta al cliente
 							}
 							
@@ -411,18 +413,19 @@ int main(){
 						}
 						
 						if(recibidos==0){ //El cliente ha introducido ctrl+c
-							if(partidas[indicePartida(i,partidas)].buscarUsuario(i)==1){ //Quiere salir el jugador 1
-									usuarios[indiceUsuario(partidas[indicePartida(i,partidas)].getUsuario2()->getDescriptor(),usuarios)].setEstado(LOGUEADO); //Se saca al jugador 2 de la partida
-								}
-							
-								if(partidas[indicePartida(i,partidas)].buscarUsuario(i)==2){ //Quiere salir el jugador 2
-									usuarios[indiceUsuario(partidas[indicePartida(i,partidas)].getUsuario1()->getDescriptor(),usuarios)].setEstado(LOGUEADO); //Se saca al jugador 1 de la partida
-								}
-							
-							partidas[indicePartida(i,partidas)].setFin(true); //Se termina la partida
-							
-							partidas.erase(partidas.begin()+indicePartida(i,partidas)); //Se borra la partida
-							
+							if(usuarios[indiceUsuario(i,usuarios)].getEstado()==PARTIDA){
+								if(partidas[indicePartida(i,partidas)].buscarUsuario(i)==1){ //Quiere salir el jugador 1
+										usuarios[indiceUsuario(partidas[indicePartida(i,partidas)].getUsuario2()->getDescriptor(),usuarios)].setEstado(LOGUEADO); //Se saca al jugador 2 de la partida
+									}
+								
+									if(partidas[indicePartida(i,partidas)].buscarUsuario(i)==2){ //Quiere salir el jugador 2
+										usuarios[indiceUsuario(partidas[indicePartida(i,partidas)].getUsuario1()->getDescriptor(),usuarios)].setEstado(LOGUEADO); //Se saca al jugador 1 de la partida
+									}
+								
+								partidas[indicePartida(i,partidas)].setFin(true); //Se termina la partida
+								
+								partidas.erase(partidas.begin()+indicePartida(i,partidas)); //Se borra la partida
+							}
 							salirCliente(i,&readfds,usuarios); //Se desconecta al cliente
 						}
 					}
