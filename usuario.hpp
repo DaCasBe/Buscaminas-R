@@ -19,6 +19,8 @@ class Usuario{
 	public:
 		inline Usuario(){
 			setEstado(CONECTADO); //Se establece el estado del usuario como CONECTADO
+			setUsuario("");
+			setPassword("");
 		}
 		
 		inline void setDescriptor(int descriptor){

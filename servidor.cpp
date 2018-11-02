@@ -214,24 +214,26 @@ int main(){
 										send(i,buffer,sizeof(buffer),0);
 									}
 									
-									else if(existeUsuario(division[1],usuarios)){ //Ya hay alguien con su mismo nombre
-										bzero(buffer,sizeof(buffer));
-										sprintf(buffer,"-Err. Ya hay un usuario conectado con su mismo nombre\n");
-										send(i,buffer,sizeof(buffer),0);
-									}
-                                    	
-									else{ //El usuario esta en estado CONECTADO
+									else{ //El usuario no esta logueado
 										if(division.size()==2){ //Se cumple el formato de USUARIO
-											if(funcionUsuario(division[1],i)){ //Se ha validado el nombre de usuario
-												usuarios[indiceUsuario(i,usuarios)].setUsuario(division[1]); //Se almacena el nombre de usuario
-												usuarios[indiceUsuario(i,usuarios)].setEstado(NOMBRE); //Se cambia el estado del usuario a NOMBRE
-												
+											if(existeUsuario(division[1],usuarios)){ //Ya hay conectado un usuario con su mismo nombre
 												bzero(buffer,sizeof(buffer));
-												sprintf(buffer,"+Ok. Usuario correcto\n");
+												sprintf(buffer,"-Err. Ya hay un usuario conectado con su mismo nombre\n");
 												send(i,buffer,sizeof(buffer),0);
 											}
-										}
 											
+											else{ //No hay ningun usuario conectado con su mismo nombre
+												if(funcionUsuario(division[1],i)){ //Se ha validado el nombre de usuario
+													usuarios[indiceUsuario(i,usuarios)].setUsuario(division[1]); //Se almacena el nombre de usuario
+													usuarios[indiceUsuario(i,usuarios)].setEstado(NOMBRE); //Se cambia el estado del usuario a NOMBRE
+												
+													bzero(buffer,sizeof(buffer));
+													sprintf(buffer,"+Ok. Usuario correcto\n");
+													send(i,buffer,sizeof(buffer),0);
+												}
+											}
+										}
+										
 										else{ //No se cumple el formato de USUARIO
 											bzero(buffer,sizeof(buffer));
                                             						sprintf(buffer,"-Err. Formato incorrecto, no ha introducido un usuario\n");
@@ -268,9 +270,21 @@ int main(){
 								}
 								
 								else if(division[0]=="INICIAR-PARTIDA"){ //Se ha recibido INICIAR-PARTIDA
-									if(usuarios[indiceUsuario(i,usuarios)].getEstado()!=LOGUEADO){ //El usuario no esta logueado
+									if(usuarios[indiceUsuario(i,usuarios)].getEstado()<LOGUEADO){ //El usuario no esta logueado
 										bzero(buffer,sizeof(buffer));
 										sprintf(buffer,"-Err. Aun no esta logueado\n");
+										send(i,buffer,sizeof(buffer),0);
+									}
+									
+									else if(usuarios[indiceUsuario(i,usuarios)].getEstado()==ESPERA){ //El usuario esta esperando para jugar
+										bzero(buffer,sizeof(buffer));
+										sprintf(buffer,"-Err. Ya esta en espera para jugar\n");
+										send(i,buffer,sizeof(buffer),0);
+									}
+									
+									else if(usuarios[indiceUsuario(i,usuarios)].getEstado()==PARTIDA){ //El usuario ya esta jugando
+										bzero(buffer,sizeof(buffer));
+										sprintf(buffer,"-Err. Ya esta en una partida\n");
 										send(i,buffer,sizeof(buffer),0);
 									}
 									
@@ -364,7 +378,7 @@ int main(){
 												
 													else{ //El numero no esta entre el 1 y el 10
 														bzero(buffer,sizeof(buffer));
-														sprintf(buffer,"-Err. El numero debe estar entre 0 y 9\n");
+														sprintf(buffer,"-Err. El numero debe estar entre 1 y 10\n");
 														send(i,buffer,sizeof(buffer),0);
 													}
 

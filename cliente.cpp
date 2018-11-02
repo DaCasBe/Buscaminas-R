@@ -70,13 +70,10 @@ int main(int argc,char ** argv){
 			recv(sd,buffer,sizeof(buffer),0);
 			
 			if(strstr(buffer,"+Ok")!=NULL or strstr(buffer,"-Err")!=NULL){ //Se ha recibido ningun mensaje convencional
+				printf("\n%s\n",buffer);
+				
 				if(strcmp(buffer,"-Err. Demasiados clientes conectados\n")==0 or strcmp(buffer,"-Err. Desconexion servidor\n")==0){ //Se ha recibido alguno de los mensajes especificados
 					fin=1;
-				}
-				
-				else{
-					//Se recibe el mensaje del servidor
-					printf("\n%s\n",buffer);
 				}
 			}
 			

@@ -236,6 +236,8 @@ void Partida::expadirCeros(int x,int y){
 			
 			if(x-1>=0){ //Hay casillas arriba
 				expadirCeros(x-1,y); //Se descubre la casilla de arriba
+				expadirCeros(x-1,y-1); //Se descubre la casilla de arriba a la izquierda
+				expadirCeros(x-1,y+1); //Se descubre la casilla de arriba a la derecha
 			}
 			
 			if(y-1>=0){ //Hay casillas a la izquierda
@@ -248,6 +250,8 @@ void Partida::expadirCeros(int x,int y){
 			
 			if(x+1<BRD_SIZE){ //Hay casillas abajo
 				expadirCeros(x+1,y); //Se descubre la casilla de abajo
+				expadirCeros(x+1,y-1); //Se descubre la casilla de abajo a la izquierda
+				expadirCeros(x+1,y+1); //Se descubre la casilla de abajo a la derecha
 			}
 		}
 	}
@@ -565,7 +569,7 @@ int Partida::destaparCasillas(int descriptor,std::string x,int y){
 		
 		else{ //La casilla no es valida
 			bzero(buffer,sizeof(buffer));
-			sprintf(buffer,"-Err. Coordenadas incorrectas\n");
+			sprintf(buffer,"-Err. Esa casilla ya esta descubierta\n");
 			send(descriptor,buffer,sizeof(buffer),0);
 			
 			return false;
